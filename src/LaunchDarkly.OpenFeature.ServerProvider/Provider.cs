@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using OpenFeature.SDK;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server.Interfaces;
+using OpenFeature.SDK;
 using OpenFeature.SDK.Model;
 
-namespace LaunchDarkly.ServerProvider
+namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     public class Provider : FeatureProvider
     {

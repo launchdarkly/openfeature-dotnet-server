@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using LaunchDarkly.Sdk;
 using OpenFeature.SDK.Model;
 
-namespace LaunchDarkly.ServerProvider
+namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     /// <summary>
     /// Extensions to <see cref="LdValue"/> which allow for conversions into OpenFeature types.
