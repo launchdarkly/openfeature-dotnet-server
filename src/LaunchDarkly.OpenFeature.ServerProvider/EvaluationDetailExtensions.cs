@@ -3,7 +3,7 @@ using LaunchDarkly.Sdk;
 using OpenFeature.SDK.Constant;
 using OpenFeature.SDK.Model;
 
-namespace LaunchDarkly.ServerProvider
+namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     /// <summary>
     /// Class containing extension methods used in the conversion of <see cref="EvaluationDetail{T}"/> into

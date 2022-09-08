@@ -3,7 +3,7 @@ using System.Globalization;
 using LaunchDarkly.Sdk;
 using OpenFeature.SDK.Model;
 
-namespace LaunchDarkly.ServerProvider
+namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     internal static class ValueExtensions
     {
