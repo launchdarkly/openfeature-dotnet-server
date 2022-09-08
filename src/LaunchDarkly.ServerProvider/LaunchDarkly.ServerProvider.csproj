@@ -1,12 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- The BUILDFRAMEWORKS variable allows us to override the target frameworks with a
+         single framework that we are testing; this allows us to test with older SDK
+         versions that would error out if they saw any newer target frameworks listed
+         here, even if we weren't running those. -->
+    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;net471;net60</BuildFrameworks>
+    <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
+
+    <DebugType>portable</DebugType>
+    <AssemblyName>LaunchDarkly.ServerProvider</AssemblyName>
+    <OutputType>Library</OutputType>
+    <PackageId>LaunchDarkly.ServerProvider</PackageId>
+    <RootNamespace>LaunchDarkly.ServerProvider</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <Description>LaunchDarkly OpenFeature Provider for the Server-Side SDK for .NET</Description>
+    <Authors>LaunchDarkly</Authors>
+    <Owners>LaunchDarkly</Owners>
+    <Company>LaunchDarkly</Company>
+    <Authors>LaunchDarkly</Authors>
+    <Owners>LaunchDarkly</Owners>
+    <Copyright>Copyright 2022 LaunchDarkly</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/launchdarkly/openfeature-dotnet-server</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/launchdarkly/openfeature-dotnet-server</RepositoryUrl>
+    <RepositoryBranch>main</RepositoryBranch>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- CopyLocalLockFileAssemblies causes dependency DLLs to be copied into the
+         build products, which is necessary for our documentation generation logic;
+         this doesn't affect what goes into the NuGet package. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- fail if XML comments are missing or invalid -->
+    <WarningsAsErrors>1570,1571,1572,1573,1574,1580,1581,1584,1591,1710,1711,1712</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.ServerSdk" Version="6.3.2" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <AssemblyOriginatorKeyFile>../../LaunchDarkly.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="OpenFeature.SDK">
