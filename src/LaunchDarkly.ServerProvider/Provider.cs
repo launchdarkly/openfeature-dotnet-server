@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using OpenFeature.SDK;
-using LaunchDarkly;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using OpenFeature.SDK.Model;

@@ -180,3 +180,7 @@ project.lock.json
 
 *.snk
 *.p12
+
+# JetBrains IDEs
+.idea/
+

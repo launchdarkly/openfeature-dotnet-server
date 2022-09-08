@@ -22,7 +22,7 @@ namespace LaunchDarkly.ServerProvider
             switch (value.Type)
             {
                 case LdValueType.Null:
-                    // OpenFeature doesn't know what to do with these.
+                    accessor(new Value());
                     break;
                 case LdValueType.Bool:
                     accessor(new Value(value.AsBool));

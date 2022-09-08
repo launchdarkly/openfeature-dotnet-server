@@ -24,20 +24,12 @@ namespace LaunchDarkly.ServerProvider
                     accessor(LdValue.Of(asBool.Value));
                 }
             }
-            else if (value.IsDouble())
+            else if (value.IsNumber())
             {
                 var asDouble = value.AsDouble();
                 if (asDouble.HasValue)
                 {
                     accessor(LdValue.Of(asDouble.Value));
-                }
-            }
-            else if (value.IsInteger())
-            {
-                var asInteger = value.AsInteger();
-                if (asInteger.HasValue)
-                {
-                    accessor(LdValue.Of(asInteger.Value));
                 }
             }
             else if (value.IsString())
