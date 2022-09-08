@@ -27,8 +27,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [ClassData(typeof(BasicTypeTestData))]
         public void ItCanConvertBasicTypes(Value ofValue, LdValue expectedValue)
         {
+            var valueExtracted = false;
             ofValue.Extract((ldValue) =>
             {
+                valueExtracted = true;
                 Assert.Equal(expectedValue.Type, ldValue.Type);
                 switch (expectedValue.Type)
                 {
@@ -51,6 +53,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                         break;
                 }
             });
+            Assert.True(valueExtracted);
         }
 
         [Fact]
@@ -59,10 +62,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var date = new DateTime(0);
             var dateString = date.ToString("yyyy-MM-ddTHH:mm:ssZ");
             var ofValue = new Value(date);
+            var valueExtracted = false;
             ofValue.Extract(ldValue =>
             {
+                valueExtracted = true;
                 Assert.Equal(dateString, ldValue.AsString);
             });
+            Assert.True(valueExtracted);
         }
 
         [Fact]
@@ -76,9 +82,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 new Value(17.5),
                 new Value("string")
             });
+            var valueExtracted = false;
             
             ofValueList.Extract(ldValue =>
             {
+                valueExtracted = true;
                 var listFromValue = ldValue.List;
                 Assert.NotNull(listFromValue);
                 Assert.Equal(LdValueType.Bool, listFromValue[0].Type);
@@ -96,6 +104,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 Assert.Equal(LdValueType.String, listFromValue[4].Type);
                 Assert.Equal("string", listFromValue[4].AsString);
             });
+            Assert.True(valueExtracted);
         }
 
         [Fact]
@@ -114,8 +123,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             };
             ofStructure.Add("structure", secondStructure);
             var ofValue = new Value(ofStructure);
+            var valueExtracted = false;
             ofValue.Extract(value =>
             {
+                valueExtracted = true;
                 Assert.Equal(LdValueType.Object, value.Type);
                 var valDict = value.Dictionary;
                 Assert.True(valDict["true"].AsBool);
@@ -126,6 +137,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 Assert.Equal(84, secondDict["number"].AsDouble);
                 Assert.Equal("another-string", secondDict["string"].AsString);
             });
+            Assert.True(valueExtracted);
         }
     }
 }

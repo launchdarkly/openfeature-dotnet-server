@@ -16,6 +16,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <param name="accessor">A method called if the value could be successfully extracted</param>
         private static void ExtractValue(Value value, Action<LdValue> accessor)
         {
+            if (value.IsNull())
+            {
+                accessor(LdValue.Null);
+            }
             if (value.IsBoolean())
             {
                 var asBool = value.AsBoolean();
