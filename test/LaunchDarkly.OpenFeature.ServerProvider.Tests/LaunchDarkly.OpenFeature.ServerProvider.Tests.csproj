@@ -18,8 +18,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"/>
-        <PackageReference Include="xunit" Version="2.4.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -28,6 +28,17 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="LaunchDarkly.ServerSdk" Version="6.3.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="OpenFeature.SDK">
+            <HintPath>..\..\..\..\open-feature\dotnet-sdk\src\OpenFeature.SDK\bin\Debug\netstandard2.0\OpenFeature.SDK.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\LaunchDarkly.OpenFeature.ServerProvider\LaunchDarkly.OpenFeature.ServerProvider.csproj" />
     </ItemGroup>
 
 </Project>

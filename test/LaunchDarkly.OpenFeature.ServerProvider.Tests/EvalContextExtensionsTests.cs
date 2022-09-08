@@ -2,7 +2,7 @@ using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
-    public class UnitTest1
+    public class EvalContextExtensionsTests
     {
         [Fact]
         public void Test1()
