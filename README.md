@@ -22,7 +22,9 @@ This version of the SDK is built for the following targets:
 ### Installation
 
 ```
-TODO
+dotnet add LaunchDarkly.ServerSdk
+dotnet add LaunchDarkly.OpenFeature.ServerSdk
+dotnet add OpenFeature
 ```
 
 ### Usage
