@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.ServerProvider", "src\LaunchDarkly.ServerProvider\LaunchDarkly.ServerProvider.csproj", "{B61EC563-2D25-47C8-86A4-0C3A8C625109}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.OpenFeature.ServerProvider", "src\LaunchDarkly.OpenFeature.ServerProvider\LaunchDarkly.OpenFeature.ServerProvider.csproj", "{B61EC563-2D25-47C8-86A4-0C3A8C625109}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,9 @@ Global
 		{B61EC563-2D25-47C8-86A4-0C3A8C625109}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B61EC563-2D25-47C8-86A4-0C3A8C625109}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B61EC563-2D25-47C8-86A4-0C3A8C625109}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8CE160B-0A65-480F-AA3F-028AD9F17F6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8CE160B-0A65-480F-AA3F-028AD9F17F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8CE160B-0A65-480F-AA3F-028AD9F17F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8CE160B-0A65-480F-AA3F-028AD9F17F6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
