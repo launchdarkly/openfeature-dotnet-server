@@ -95,6 +95,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 {"number", 42},
                 {"string", "string"}
             };
+            var secondStructure = new Structure
+            {
+                {"number", 84},
+                {"string", "another-string"}
+            };
+            ofStructure.Add("structure", secondStructure);
             var ofValue = new Value(ofStructure);
             ofValue.Extract(value =>
             {
@@ -103,6 +109,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 Assert.True(valDict["true"].AsBool);
                 Assert.Equal(42, valDict["number"].AsDouble);
                 Assert.Equal("string", valDict["string"].AsString);
+
+                var secondDict = valDict["structure"].Dictionary;
+                Assert.Equal(84, secondDict["number"].AsDouble);
+                Assert.Equal("another-string", secondDict["string"].AsString);
             });
         }
     }

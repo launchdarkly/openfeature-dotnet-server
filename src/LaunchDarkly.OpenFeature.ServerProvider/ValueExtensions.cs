@@ -63,7 +63,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 var structure = value.AsStructure();
                 foreach (var kvp in structure)
                 {
-                    ExtractValue(value, (ldValue) => objectBuilder.Add(kvp.Key, ldValue));
+                    ExtractValue(kvp.Value, (ldValue) => objectBuilder.Add(kvp.Key, ldValue));
                 }
 
                 accessor(objectBuilder.Build());
