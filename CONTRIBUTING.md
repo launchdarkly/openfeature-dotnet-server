@@ -4,7 +4,7 @@ LaunchDarkly has published an [SDK contributor's guide](https://docs.launchdarkl
 
 ## Submitting bug reports and feature requests
 
-The LaunchDarkly SDK team monitors the [issue tracker](https://github.com/launchdarkly/open-feature-node/issues) in the provider repository. Bug reports and feature requests specific to this provider should be filed in this issue tracker. The SDK team will respond to all newly filed issues within two business days.
+The LaunchDarkly SDK team monitors the [issue tracker](https://github.com/launchdarkly/openfeature-dotnet-server/issues) in the provider repository. Bug reports and feature requests specific to this provider should be filed in this issue tracker. The SDK team will respond to all newly filed issues within two business days.
 
 ## Submitting pull requests
 
@@ -14,30 +14,32 @@ We encourage pull requests and other contributions from the community. Before su
 
 ### Prerequisites
 
-The project should be built and tested against the lowest compatible version, Node 16. It uses `npm`, which is bundled in all supported versions of Node.
+To set up your build time environment, you must [download .NET development tools and follow the instructions](https://dotnet.microsoft.com/download). .NET 6.0 is preferred, since the .NET 6.0 tools are able to build for all supported target platforms.
 
-### Setup
+### Building
 
-To install project dependencies, from the project root directory:
+To install all required packages:
 
+```bash
+dotnet restore
 ```
-npm install
+
+Then, to build the SDK for all target frameworks:
+
+```bash
+dotnet build src/LaunchDarkly.OpenFeature.ServerProvider
+```
+
+Or, to build for only one target framework (in this example, .NET Standard 2.0):
+
+```bash
+dotnet build src/LaunchDarkly.OpenFeature.ServerProvider -f netstandard2.0
 ```
 
 ### Testing
 
 To run all unit tests:
 
+```bash
+dotnet test test/LaunchDarkly.OpenFeature.ServerProvider.Tests/LaunchDarkly.OpenFeature.ServerProvider.Tests.csproj
 ```
-npm test
-```
-
-### Auditing package dependencies
-
-The `npm audit` tool compares all dependencies and transitive dependencies to a database of package versions with known vulnerabilities. However, the output of this tool includes both runtime and development dependencies.
-
-Runtime dependencies can affect applications using the SDK; they can only be fixed by updating one of the explicit dependencies in `package.json`. Development dependencies cannot affect applications, but will still cause `npm audit` to flag the project; they can be fixed by running `npm audit fix` to add overrides for transitive dependencies in `package-lock.json`.
-
-It is important _not_ to run `npm audit fix` if there are any bad _runtime_ dependencies, because it will hide the problem in our own build, without actually fixing the vulnerability when an application uses the SDK.
-
-The script `scripts/better-audit.sh`, which is run in the CI build and can also be run manually, processes the output of `npm audit` to eliminate all duplicate entries and then determines whether each entry is coming from a runtime dependency or a development dependency. If there are any runtime ones, it terminates with an error code so the build will fail.
