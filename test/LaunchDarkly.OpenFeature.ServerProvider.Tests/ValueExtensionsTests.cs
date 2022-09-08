@@ -50,7 +50,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                         Assert.True(false, "Test misconfigured");
                         break;
                 }
-                // Assert.Equal(expectedValue., ldValue.AsString);
             });
         }
 
