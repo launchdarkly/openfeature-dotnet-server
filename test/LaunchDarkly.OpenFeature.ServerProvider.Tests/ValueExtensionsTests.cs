@@ -54,6 +54,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void ItCanConvertDates()
+        {
+            var date = new DateTime(0);
+            var dateString = date.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            var ofValue = new Value(date);
+            ofValue.Extract(ldValue =>
+            {
+                Assert.Equal(dateString, ldValue.AsString);
+            });
+        }
+
+        [Fact]
         public void ItCanConvertArrays()
         {
             var ofValueList = new Value(new List<Value>
