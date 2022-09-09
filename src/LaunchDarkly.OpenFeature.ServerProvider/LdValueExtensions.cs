@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using LaunchDarkly.Sdk;
 using OpenFeature.SDK.Model;
 
@@ -12,45 +13,29 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     {
         /// <summary>
         /// Extract an <see cref="LdValue"/> into an <see cref="Value"/>.
-        ///
-        /// If a value cannot be extracted, then the accessor will not be called.
         /// </summary>
         /// <param name="value">The value to extract.</param>
-        /// <param name="accessor">A method called if the value could be successfully extracted.</param>
-        private static void ExtractValue(LdValue value, Action<Value> accessor)
+        private static Value ExtractValue(LdValue value)
         {
             switch (value.Type)
             {
                 case LdValueType.Null:
-                    accessor(new Value());
-                    break;
+                    return new Value();
                 case LdValueType.Bool:
-                    accessor(new Value(value.AsBool));
-                    break;
+                    return new Value(value.AsBool);
                 case LdValueType.Number:
-                    accessor(new Value(value.AsDouble));
-                    break;
+                   return new Value(value.AsDouble);
                 case LdValueType.String:
-                    accessor(new Value(value.AsString));
-                    break;
+                    return new Value(value.AsString);
                 case LdValueType.Array:
-                    var ofList = new List<Value>();
-                    foreach (var ldValue in value.List)
-                    {
-                        ExtractValue(ldValue, (ofValue) => { ofList.Add(ofValue); });
-                    }
-
-                    accessor(new Value(ofList));
-                    break;
+                    return new Value(value.List.Select(ExtractValue).ToList());
                 case LdValueType.Object:
                     var ofStructure = new Structure();
                     foreach (var kvp in value.Dictionary)
                     {
-                        ExtractValue(kvp.Value, (ofValue) => { ofStructure.Add(kvp.Key, ofValue); });
+                        ofStructure.Add(kvp.Key, ExtractValue(kvp.Value));
                     }
-
-                    accessor(new Value(ofStructure));
-                    break;
+                    return new Value(ofStructure);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -66,7 +51,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             var ofStructure = new Structure();
             foreach (var kvp in value.Dictionary)
             {
-                ExtractValue(kvp.Value, (ofValue) => { ofStructure.Add(kvp.Key, ofValue); });
+                var val = ExtractValue(kvp.Value);
+                ofStructure.Add(kvp.Key, val);
             }
 
             return ofStructure;

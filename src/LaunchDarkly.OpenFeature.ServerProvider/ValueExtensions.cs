@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using LaunchDarkly.Sdk;
 using OpenFeature.SDK.Model;
 
@@ -9,23 +10,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     {
         /// <summary>
         /// Extract an OpenFeature <see cref="Value"/> into an <see cref="LdValue"/>.
-        ///
-        /// If a value cannot be extracted, then the accessor will not be called.
         /// </summary>
         /// <param name="value">The value to extract</param>
-        /// <param name="accessor">A method called if the value could be successfully extracted</param>
-        private static void ExtractValue(Value value, Action<LdValue> accessor)
+        public static LdValue ExtractValue(this Value value)
         {
             if (value.IsNull())
             {
-                accessor(LdValue.Null);
+                return LdValue.Null;
             }
             if (value.IsBoolean())
             {
                 var asBool = value.AsBoolean();
                 if (asBool.HasValue)
                 {
-                    accessor(LdValue.Of(asBool.Value));
+                    return LdValue.Of(asBool.Value);
                 }
             }
             else if (value.IsNumber())
@@ -33,33 +31,26 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 var asDouble = value.AsDouble();
                 if (asDouble.HasValue)
                 {
-                    accessor(LdValue.Of(asDouble.Value));
+                    return LdValue.Of(asDouble.Value);
                 }
             }
             else if (value.IsString())
             {
-                accessor(LdValue.Of(value.AsString()));
+                return LdValue.Of(value.AsString());
             }
             else if (value.IsDateTime())
             {
                 var asDateTime = value.AsDateTime();
                 if (asDateTime.HasValue)
                 {
-                    accessor(LdValue.Of(asDateTime.Value.ToString("yyyy-MM-ddTHH:mm:ssZ",
-                        CultureInfo.InvariantCulture)));
+                    return LdValue.Of(asDateTime.Value.ToString("yyyy-MM-ddTHH:mm:ssZ",
+                        CultureInfo.InvariantCulture));
                 }
             }
             else if (value.IsList())
             {
-                var arrayBuilder = LdValue.BuildArray();
-
                 var list = value.AsList();
-                foreach (var item in list)
-                {
-                    ExtractValue(item, (ldValue) => arrayBuilder.Add(ldValue));
-                }
-
-                accessor(arrayBuilder.Build());
+                return LdValue.ArrayFrom(list.Select(ExtractValue));
             }
             else if (value.IsStructure())
             {
@@ -67,16 +58,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 var structure = value.AsStructure();
                 foreach (var kvp in structure)
                 {
-                    ExtractValue(kvp.Value, (ldValue) => objectBuilder.Add(kvp.Key, ldValue));
+                    var val = ExtractValue(kvp.Value);
+                    objectBuilder.Add(kvp.Key, val);
                 }
 
-                accessor(objectBuilder.Build());
+                return objectBuilder.Build();
             }
-        }
-
-        public static void Extract(this Value value, Action<LdValue> accessor)
-        {
-            ExtractValue(value, accessor);
+            // Could not convert, should not happen.
+            return LdValue.Null;
         }
     }
 }

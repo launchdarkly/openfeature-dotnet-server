@@ -17,79 +17,78 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <param name="builder">The user builder to add the value to</param>
         private static void ProcessValue(string key, Value value, IUserBuilder builder)
         {
-            value.Extract((ldValue) =>
+            var ldValue = value.ExtractValue();
+            switch (key)
             {
-                switch (key)
-                {
-                    case "secondary":
-                        if (ldValue.IsString)
-                        {
-                            builder.Secondary(ldValue.AsString);
-                        }
+                case "secondary":
+                    if (ldValue.IsString)
+                    {
+                        builder.Secondary(ldValue.AsString);
+                    }
 
-                        break;
-                    case "name":
-                        if (ldValue.IsString)
-                        {
-                            builder.Name(ldValue.AsString);
-                        }
+                    break;
+                case "name":
+                    if (ldValue.IsString)
+                    {
+                        builder.Name(ldValue.AsString);
+                    }
 
-                        break;
-                    case "firstName":
-                        if (ldValue.IsString)
-                        {
-                            builder.FirstName(ldValue.AsString);
-                        }
+                    break;
+                case "firstName":
+                    if (ldValue.IsString)
+                    {
+                        builder.FirstName(ldValue.AsString);
+                    }
 
-                        break;
-                    case "lastName":
-                        if (ldValue.IsString)
-                        {
-                            builder.LastName(ldValue.AsString);
-                        }
+                    break;
+                case "lastName":
+                    if (ldValue.IsString)
+                    {
+                        builder.LastName(ldValue.AsString);
+                    }
 
-                        break;
-                    case "email":
-                        if (ldValue.IsString)
-                        {
-                            builder.Email(ldValue.AsString);
-                        }
+                    break;
+                case "email":
+                    if (ldValue.IsString)
+                    {
+                        builder.Email(ldValue.AsString);
+                    }
 
-                        break;
-                    case "avatar":
-                        if (ldValue.IsString)
-                        {
-                            builder.Avatar(ldValue.AsString);
-                        }
+                    break;
+                case "avatar":
+                    if (ldValue.IsString)
+                    {
+                        builder.Avatar(ldValue.AsString);
+                    }
 
-                        break;
-                    case "ip":
-                        if (ldValue.IsString)
-                        {
-                            builder.IPAddress(ldValue.AsString);
-                        }
+                    break;
+                case "ip":
+                    if (ldValue.IsString)
+                    {
+                        builder.IPAddress(ldValue.AsString);
+                    }
 
-                        break;
-                    case "country":
-                        if (ldValue.IsString)
-                        {
-                            builder.Country(ldValue.AsString);
-                        }
+                    break;
+                case "country":
+                    if (ldValue.IsString)
+                    {
+                        builder.Country(ldValue.AsString);
+                    }
 
-                        break;
-                    case "anonymous":
-                        if (ldValue.Type == LdValueType.Bool)
-                        {
-                            builder.Anonymous(ldValue.AsBool);
-                        }
+                    break;
+                case "anonymous":
+                    if (ldValue.Type == LdValueType.Bool)
+                    {
+                        builder.Anonymous(ldValue.AsBool);
+                    }
 
-                        break;
-                    default:
-                        // Was not a built-in attribute.
-                        builder.Custom(key, ldValue);
-                        break;
-                }
-            });
+                    break;
+                default:
+                    // Was not a built-in attribute.
+                    builder.Custom(key, ldValue);
+                    break;
+            }
+
             // TODO: What should happen if the type was not correct?
         }
 
