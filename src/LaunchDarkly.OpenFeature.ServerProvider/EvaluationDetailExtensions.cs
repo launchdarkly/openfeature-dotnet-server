@@ -85,7 +85,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         /// <summary>
         /// Convert an <see cref="EvaluationDetail{LdValue}"/> into an <see cref="EvaluationDetail{Value}"/>.
-        /// 
+        ///
         /// When handling an evaluation with a <see cref="Value"/> type we need to convert the evaluation detail
         /// into a detail containing a <see cref="Value"/>. Doing so allows for the full evaluation detail to be
         /// converted into a <see cref="ResolutionDetails{T}"/>.
