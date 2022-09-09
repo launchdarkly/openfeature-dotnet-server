@@ -16,7 +16,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <param name="builder">The user builder to add the value to</param>
         private static void ProcessValue(string key, Value value, IUserBuilder builder)
         {
-            var ldValue = value.ExtractValue();
+            var ldValue = value.ToLdValue();
             switch (key)
             {
                 case "secondary":

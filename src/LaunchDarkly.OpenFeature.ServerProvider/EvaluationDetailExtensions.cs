@@ -48,24 +48,24 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <summary>
-        /// Convert an <see cref="EvaluationDetail{LdValue}"/> into an <see cref="EvaluationDetail{Structure}"/>.
+        /// Convert an <see cref="EvaluationDetail{LdValue}"/> into an <see cref="EvaluationDetail{Value}"/>.
         /// 
-        /// When handling an evaluation with a <see cref="Structure"/> type we need to convert the evaluation detail
-        /// into a detail containing a <see cref="Structure"/>. Doing so allows for the full evaluation detail to be
+        /// When handling an evaluation with a <see cref="Value"/> type we need to convert the evaluation detail
+        /// into a detail containing a <see cref="Value"/>. Doing so allows for the full evaluation detail to be
         /// converted into a <see cref="ResolutionDetails{T}"/>.
         /// </summary>
         /// <param name="detail">The detail to converted</param>
         /// <param name="defaultValue">
         /// Used in place of the default value provided during evaluation.
-        /// This avoids converting the value to a <see cref="LdValue"/> and then converting it back to a <see cref="Structure"/>.
+        /// This avoids converting the value to a <see cref="LdValue"/> and then converting it back to a <see cref="Value"/>.
         /// </param>
         /// <returns>The converted detail</returns>
-        public static EvaluationDetail<Structure> ToStructDetail(this EvaluationDetail<LdValue> detail,
-            Structure defaultValue)
+        public static EvaluationDetail<Value> ToValueDetail(this EvaluationDetail<LdValue> detail,
+            Value defaultValue)
         {
             return detail.IsDefaultValue
-                ? new EvaluationDetail<Structure>(defaultValue, detail.VariationIndex, detail.Reason)
-                : new EvaluationDetail<Structure>(detail.Value.ToStructure(), detail.VariationIndex, detail.Reason);
+                ? new EvaluationDetail<Value>(defaultValue, detail.VariationIndex, detail.Reason)
+                : new EvaluationDetail<Value>(detail.Value.ToValue(), detail.VariationIndex, detail.Reason);
         }
     }
 }

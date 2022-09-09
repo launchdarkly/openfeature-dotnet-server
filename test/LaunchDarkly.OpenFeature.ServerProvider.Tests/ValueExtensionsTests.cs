@@ -12,7 +12,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [ClassData(typeof(BasicTypeTestData))]
         public void ItCanConvertBasicTypes(Value ofValue, LdValue expectedValue)
         {
-            var ldValue = ofValue.ExtractValue();
+            var ldValue = ofValue.ToLdValue();
 
             Assert.Equal(expectedValue.Type, ldValue.Type);
             switch (expectedValue.Type)
@@ -43,7 +43,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var date = new DateTime(0);
             var dateString = date.ToString("yyyy-MM-ddTHH:mm:ssZ");
             var ofValue = new Value(date);
-            var ldValue = ofValue.ExtractValue();
+            var ldValue = ofValue.ToLdValue();
             Assert.Equal(dateString, ldValue.AsString);
         }
 
@@ -55,11 +55,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 new Value(true),
                 new Value(false),
                 new Value(17),
-                new Value(17.5),
+                new Value(42.5),
                 new Value("string")
             });
 
-            var ldValue = ofValueList.ExtractValue();
+            var ldValue = ofValueList.ToLdValue();
 
             var listFromValue = ldValue.List;
             Assert.NotNull(listFromValue);
@@ -73,7 +73,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(17, listFromValue[2].AsInt);
 
             Assert.Equal(LdValueType.Number, listFromValue[3].Type);
-            Assert.Equal(17.5, listFromValue[3].AsDouble);
+            Assert.Equal(42.5, listFromValue[3].AsDouble);
 
             Assert.Equal(LdValueType.String, listFromValue[4].Type);
             Assert.Equal("string", listFromValue[4].AsString);
@@ -95,7 +95,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             };
             ofStructure.Add("structure", secondStructure);
             var ofValue = new Value(ofStructure);
-            var value = ofValue.ExtractValue();
+            var value = ofValue.ToLdValue();
 
             Assert.Equal(LdValueType.Object, value.Type);
             var valDict = value.Dictionary;

@@ -11,7 +11,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// Extract an OpenFeature <see cref="Value"/> into an <see cref="LdValue"/>.
         /// </summary>
         /// <param name="value">The value to extract</param>
-        public static LdValue ExtractValue(this Value value)
+        public static LdValue ToLdValue(this Value value)
         {
             if (value.IsNull())
             {
@@ -49,7 +49,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             else if (value.IsList())
             {
                 var list = value.AsList();
-                return LdValue.ArrayFrom(list.Select(ExtractValue));
+                return LdValue.ArrayFrom(list.Select(ToLdValue));
             }
             else if (value.IsStructure())
             {
@@ -57,7 +57,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 var structure = value.AsStructure();
                 foreach (var kvp in structure)
                 {
-                    var val = ExtractValue(kvp.Value);
+                    var val = ToLdValue(kvp.Value);
                     objectBuilder.Add(kvp.Key, val);
                 }
 

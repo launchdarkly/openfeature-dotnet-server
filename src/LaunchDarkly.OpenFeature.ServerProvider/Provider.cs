@@ -51,11 +51,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 .ToResolutionDetails(flagKey));
         }
 
-        public override Task<ResolutionDetails<Structure>> ResolveStructureValue(string flagKey, Structure defaultValue,
+        public override Task<ResolutionDetails<Value>> ResolveStructureValue(string flagKey, Value defaultValue,
             EvaluationContext context = null)
         {
             return Task.FromResult(_client.JsonVariationDetail(flagKey, context.ToLdUser(), LdValue.Null)
-                .ToStructDetail(defaultValue).ToResolutionDetails(flagKey));
+                .ToValueDetail(defaultValue).ToResolutionDetails(flagKey));
         }
 
         #endregion
