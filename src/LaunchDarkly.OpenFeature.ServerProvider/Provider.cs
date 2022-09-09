@@ -8,7 +8,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     public class Provider : FeatureProvider
     {
-        private readonly Metadata _metadata = new Metadata("launchdarkly-dotnet-provider");
+        private readonly Metadata _metadata = new Metadata("launchdarkly-dotnet-server-provider");
         private readonly ILdClient _client;
 
         public Provider(ILdClient client)
