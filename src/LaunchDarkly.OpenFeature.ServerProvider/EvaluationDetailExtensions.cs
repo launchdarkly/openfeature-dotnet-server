@@ -39,6 +39,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
         }
         
+        /// <summary>
+        /// Convert an <see cref="EvaluationDetail{T}"/> to a <see cref="ResolutionDetails{T}"/>.
+        /// </summary>
+        /// <param name="detail">The detail to convert</param>
+        /// <param name="flagKey">The flag key that was evaluated</param>
+        /// <typeparam name="T">The type of the flag evaluation</typeparam>
+        /// <returns>The <see cref="EvaluationDetail{T}"/></returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the kind is not valid</exception>
         public static ResolutionDetails<T> ToResolutionDetails<T>(this EvaluationDetail<T> detail, string flagKey)
         {
             if (detail.Reason.Kind != EvaluationReasonKind.Error)
