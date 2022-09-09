@@ -11,12 +11,40 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     /// </summary>
     internal static class EvaluationDetailExtensions
     {
+        /// <summary>
+        /// Convert an <see cref="EvaluationReasonKind"/> into a string identifier.
+        /// This string identifier is the same as we would use in a JSON representation.
+        /// </summary>
+        /// <param name="value">The value to convert</param>
+        /// <returns>The value as a string</returns>
+        /// <exception cref="ArgumentException">Thrown if the kind is unsupported.</exception>
+        private static string ToIdentifier(this EvaluationReasonKind value)
+        {
+            switch (value)
+            {
+                case EvaluationReasonKind.Off:
+                    return "OFF";
+                case EvaluationReasonKind.Fallthrough:
+                    return "FALLTHROUGH";
+                case EvaluationReasonKind.TargetMatch:
+                    return "TARGET_MATCH";
+                case EvaluationReasonKind.RuleMatch:
+                    return "RULE_MATCH";
+                case EvaluationReasonKind.PrerequisiteFailed:
+                    return "PREREQUISITE_FAILED";
+                case EvaluationReasonKind.Error:
+                    return "ERROR";
+                default:
+                    throw new ArgumentException();
+            }
+        }
+        
         public static ResolutionDetails<T> ToResolutionDetails<T>(this EvaluationDetail<T> detail, string flagKey)
         {
             if (detail.Reason.Kind != EvaluationReasonKind.Error)
             {
                 return new ResolutionDetails<T>(flagKey, detail.Value, ErrorType.None,
-                    reason: detail.Reason.Kind.ToString(), variant: detail.VariationIndex?.ToString());
+                    reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString());
             }
 
             var errorType = ErrorType.General;
@@ -44,7 +72,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
 
             return new ResolutionDetails<T>(flagKey, detail.Value, errorType,
-                reason: detail.Reason.Kind.ToString(), variant: detail.VariationIndex?.ToString());
+                reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString());
         }
 
         /// <summary>
