@@ -98,7 +98,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <returns>A converted user</returns>
         public static User ToLdUser(this EvaluationContext evaluationContext)
         {
-            var userBuilder = User.Builder(evaluationContext.GetValue("targetingKey").AsString());
+            var userBuilder = User.Builder(evaluationContext.GetValue("targetingKey").AsString);
             foreach (var kvp in evaluationContext)
             {
                 var key = kvp.Key;

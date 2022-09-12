@@ -84,7 +84,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var provider = new Provider(mock.Object);
 
             var res = provider.ResolveStructureValue("flag-key", new Value("false"), evaluationContext).Result;
-            Assert.Equal("true", res.Value.AsString());
+            Assert.Equal("true", res.Value.AsString);
         }
     }
 }

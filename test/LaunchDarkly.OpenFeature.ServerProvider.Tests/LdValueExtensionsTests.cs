@@ -16,19 +16,19 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             switch (ldValue.Type)
             {
                 case LdValueType.Null:
-                    Assert.True(ofValue.IsNull());
+                    Assert.True(ofValue.IsNull);
                     break;
                 case LdValueType.Bool:
-                    Assert.True(ofValue.IsBoolean());
-                    Assert.Equal(expectedValue.AsBoolean(), ofValue.AsBoolean());
+                    Assert.True(ofValue.IsBoolean);
+                    Assert.Equal(expectedValue.AsBoolean, ofValue.AsBoolean);
                     break;
                 case LdValueType.Number:
-                    Assert.True(ofValue.IsNumber());
-                    Assert.Equal(expectedValue.AsDouble(), ofValue.AsDouble());
+                    Assert.True(ofValue.IsNumber);
+                    Assert.Equal(expectedValue.AsDouble, ofValue.AsDouble);
                     break;
                 case LdValueType.String:
-                    Assert.True(ofValue.IsString());
-                    Assert.Equal(expectedValue.AsString(), ofValue.AsString());
+                    Assert.True(ofValue.IsString);
+                    Assert.Equal(expectedValue.AsString, ofValue.AsString);
                     break;
                 case LdValueType.Array:
                 case LdValueType.Object:
@@ -53,12 +53,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 
             var ofValueList = ldValueList.ToValue();
 
-            Assert.True(ofValueList.AsList()[0].IsNull());
-            Assert.True(ofValueList.AsList()[1].AsBoolean());
-            Assert.False(ofValueList.AsList()[2].AsBoolean());
-            Assert.Equal("string", ofValueList.AsList()[3].AsString());
-            Assert.Equal(17, ofValueList.AsList()[4].AsInteger());
-            Assert.Equal(42.5, ofValueList.AsList()[5].AsDouble());
+            Assert.True(ofValueList.AsList[0].IsNull);
+            Assert.True(ofValueList.AsList[1].AsBoolean);
+            Assert.False(ofValueList.AsList[2].AsBoolean);
+            Assert.Equal("string", ofValueList.AsList[3].AsString);
+            Assert.Equal(17, ofValueList.AsList[4].AsInteger);
+            Assert.Equal(42.5, ofValueList.AsList[5].AsDouble);
         }
 
         [Fact]
@@ -78,14 +78,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 
             var ofStructureVal = ldObject.ToValue();
 
-            var ofStructure = ofStructureVal.AsStructure();
-            Assert.Equal(true, ofStructure.GetValue("true").AsBoolean());
-            Assert.Equal(42, ofStructure.GetValue("number").AsInteger());
-            Assert.Equal("string", ofStructure.GetValue("string").AsString());
+            var ofStructure = ofStructureVal.AsStructure;
+            Assert.Equal(true, ofStructure.GetValue("true").AsBoolean);
+            Assert.Equal(42, ofStructure.GetValue("number").AsInteger);
+            Assert.Equal("string", ofStructure.GetValue("string").AsString);
 
-            var ofStructure2 = ofStructure.GetValue("object").AsStructure();
-            Assert.Equal(84, ofStructure2.GetValue("number").AsInteger());
-            Assert.Equal("another-string", ofStructure2.GetValue("string").AsString());
+            var ofStructure2 = ofStructure.GetValue("object").AsStructure;
+            Assert.Equal(84, ofStructure2.GetValue("number").AsInteger);
+            Assert.Equal("another-string", ofStructure2.GetValue("string").AsString);
         }
     }
 }

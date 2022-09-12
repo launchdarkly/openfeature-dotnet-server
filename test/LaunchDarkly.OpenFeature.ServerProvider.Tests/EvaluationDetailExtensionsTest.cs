@@ -84,7 +84,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             // We want to bypass the default conversion to we don't have to convert the Value
             // back and forth. So, for errors, it should use the provided default.
             var resolution = detail.ToValueDetail(new Value("TheDefault"));
-            Assert.Equal("TheDefault", resolution.Value.AsString());
+            Assert.Equal("TheDefault", resolution.Value.AsString);
         }
         
         [Fact]
@@ -94,7 +94,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 EvaluationReason.ErrorReason(EvaluationErrorKind.ClientNotReady));
             
             var resolution = detail.ToValueDetail(new Value(false));
-            Assert.True(resolution.Value.AsBoolean());
+            Assert.True(resolution.Value.AsBoolean);
         }
     }
 }
