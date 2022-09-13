@@ -103,8 +103,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         public static User ToLdUser(this EvaluationContext evaluationContext)
         {
             // targetingKey is the specification, so it takes precedence.
-            var keyAttr = evaluationContext.ContainsKey("key") ? evaluationContext.GetValue("key") : null;
-            var targetingKey = evaluationContext.ContainsKey("targetingKey") ? evaluationContext.GetValue("targetingKey") : null;
+            evaluationContext.TryGetValue("key", out var keyAttr);
+            evaluationContext.TryGetValue("targetingKey", out var targetingKey);
             var finalKey = (targetingKey ?? keyAttr)?.AsString;
 
             var userBuilder = User.Builder(finalKey);
