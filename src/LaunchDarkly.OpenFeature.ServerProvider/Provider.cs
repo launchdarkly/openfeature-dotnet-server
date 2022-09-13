@@ -18,10 +18,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         #region FeatureProvider Implementation
 
-        public override Metadata GetMetadata()
-        {
-            return _metadata;
-        }
+        public override Metadata GetMetadata() => _metadata;
 
         public override Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue,
             EvaluationContext context = null)
