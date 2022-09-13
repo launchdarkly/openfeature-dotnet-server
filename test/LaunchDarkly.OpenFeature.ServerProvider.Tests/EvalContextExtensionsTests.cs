@@ -21,18 +21,21 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             evaluationContext.Add("country", "country");
             evaluationContext.Add("anonymous", true);
 
-            var ldUser = evaluationContext.ToLdUser();
+            var convertedUser = evaluationContext.ToLdUser();
 
-            Assert.Equal("the-key", ldUser.Key);
-            Assert.Equal("secondary", ldUser.Secondary);
-            Assert.Equal("name", ldUser.Name);
-            Assert.Equal("firstName", ldUser.FirstName);
-            Assert.Equal("lastName", ldUser.LastName);
-            Assert.Equal("email", ldUser.Email);
-            Assert.Equal("avatar", ldUser.Avatar);
-            Assert.Equal("ip", ldUser.IPAddress);
-            Assert.Equal("country", ldUser.Country);
-            Assert.True(ldUser.Anonymous);
+            var expectedUser = User.Builder("the-key")
+                .Secondary("secondary")
+                .Name("name")
+                .FirstName("firstName")
+                .LastName("lastName")
+                .Email("email")
+                .Avatar("avatar")
+                .IPAddress("ip")
+                .Country("country")
+                .Anonymous(true)
+                .Build();
+
+            Assert.Equal(expectedUser, convertedUser);
         }
 
         [Fact]
@@ -49,6 +52,23 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 attributeValue,
                 ldUser.GetAttribute(UserAttribute.ForName(attributeKey)).AsString
             );
+        }
+
+        [Fact]
+        public void ItCanUseKeyAttribute()
+        {
+            var evaluationContext = new EvaluationContext();
+            evaluationContext.Add("key", "the-key");
+            Assert.Equal("the-key", evaluationContext.ToLdUser().Key);
+        }
+        
+        [Fact]
+        public void ItUsesTheTargetingKeyInFavorOfKey()
+        {
+            var evaluationContext = new EvaluationContext();
+            evaluationContext.Add("key", "key");
+            evaluationContext.Add("targetingKey", "targeting-key");
+            Assert.Equal("targeting-key", evaluationContext.ToLdUser().Key);
         }
     }
 }

@@ -19,6 +19,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             var ldValue = value.ToLdValue();
             switch (key)
             {
+                // The targeting key/key will be handled outside this value conversion.
+                case "targetingKey":
+                case "key":
+                    break;
                 case "secondary":
                     if (ldValue.IsString)
                     {
@@ -98,7 +102,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <returns>A converted user</returns>
         public static User ToLdUser(this EvaluationContext evaluationContext)
         {
-            var userBuilder = User.Builder(evaluationContext.GetValue("targetingKey").AsString);
+            // targetingKey is the specification, so it takes precedence.
+            var keyAttr = evaluationContext.ContainsKey("key") ? evaluationContext.GetValue("key") : null;
+            var targetingKey = evaluationContext.ContainsKey("targetingKey") ? evaluationContext.GetValue("targetingKey") : null;
+            var finalKey = (targetingKey ?? keyAttr)?.AsString;
+
+            var userBuilder = User.Builder(finalKey);
             foreach (var kvp in evaluationContext)
             {
                 var key = kvp.Key;
