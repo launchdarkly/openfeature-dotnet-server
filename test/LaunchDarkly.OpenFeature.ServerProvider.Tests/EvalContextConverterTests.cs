@@ -6,11 +6,17 @@ using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
-    public class EvalContextExtensionsTests
+    public class EvalContextConverterTests
     {
-        private readonly EvalContextConverter _converter =
-            new EvalContextConverter(Components.NoLogging.CreateLoggingConfiguration().LogAdapter.Logger("test"));
-        
+        private LogCapture _logCapture;
+        private readonly EvalContextConverter _converter;
+
+        public EvalContextConverterTests()
+        {
+            _logCapture = new LogCapture();
+            _converter = new EvalContextConverter(_logCapture.Logger("test"));
+        }
+
         [Fact]
         public void ItCanHandleBuiltInAttributes()
         {
@@ -41,12 +47,50 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
 
             Assert.Equal(expectedUser, convertedUser);
+            // Nothing is wrong with this, so it shouldn't have produced any messages.
+            Assert.Empty(_logCapture.GetMessages());
         }
 
         [Fact]
-        public void WhatHappens()
+        public void ItLogsAndErrorWhenThereIsNoTargetingKey()
         {
             _converter.ToLdUser(new EvaluationContext());
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
+                "must be a string."));
+        }
+
+        [Fact]
+        public void ItLogsAWarningWhenBothTargetingKeyAndKeyAreDefined()
+        {
+            _converter.ToLdUser(new EvaluationContext().Add("targetingKey", "key").Add("key", "key"));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
+                "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
+                "attribute will be discarded."));
+        }
+
+        [Theory]
+        [InlineData("secondary", "string")]
+        [InlineData("name", "string")]
+        [InlineData("firstName", "string")]
+        [InlineData("lastName", "string")]
+        [InlineData("email", "string")]
+        [InlineData("avatar", "string")]
+        [InlineData("ip", "string")]
+        [InlineData("country", "string")]
+        [InlineData("anonymous", "bool")]
+        public void ItLogsErrorsWhenTypesAreIncorrectForBuiltInAttributes(string attr, string type)
+        {
+            var evaluationContext = new EvaluationContext();
+            evaluationContext.Add("targetingKey", "key");
+            //Number isn't valid for any built-in,
+            evaluationContext.Add(attr, 1);
+
+            _converter.ToLdUser(evaluationContext);
+
+            Assert.True(_logCapture.HasMessageWithRegex(LogLevel.Error, $".*attribute '{attr}'.*type {type}.*"));
+
+            _converter.ToLdUser(evaluationContext);
         }
 
         [Fact]
@@ -72,7 +116,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             evaluationContext.Add("key", "the-key");
             Assert.Equal("the-key", _converter.ToLdUser(evaluationContext).Key);
         }
-        
+
         [Fact]
         public void ItUsesTheTargetingKeyInFavorOfKey()
         {

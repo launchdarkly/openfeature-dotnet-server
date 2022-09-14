@@ -27,8 +27,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <param name="attribute">The name of the attribute.</param>
         /// <param name="type">The type of the attribute.</param>
         /// <returns>A message indicating the attribute was of the incorrect type.</returns>
-        private static string InvalidTypeMessage(string attribute, string type) => $"The attribute '${attribute}' " +
-            $"must be of type ${type}";
+        private static string InvalidTypeMessage(string attribute, string type) => $"The attribute '{attribute}' " +
+            $"must be of type {type}";
 
         /// <summary>
         /// Extract a string value and log an error if the value was not a string.
@@ -44,6 +44,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             if (value.IsString)
             {
                 setter(value.AsString);
+                return;
             }
 
             _log.Error(InvalidTypeMessage(key, "string"));
@@ -63,6 +64,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             if (value.Type == LdValueType.Bool)
             {
                 setter(value.AsBool);
+                return;
             }
 
             _log.Error(InvalidTypeMessage(key, "bool"));
