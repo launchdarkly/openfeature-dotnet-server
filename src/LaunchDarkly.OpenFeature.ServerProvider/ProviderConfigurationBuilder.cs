@@ -18,6 +18,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         internal ProviderConfigurationBuilder() {}
 
+        internal ProviderConfigurationBuilder(ProviderConfiguration fromConfiguration)
+        {
+            _loggingConfigurationFactory = fromConfiguration.LoggingConfigurationFactory;
+        }
+
         #endregion
         /// <summary>
         /// Sets the provider's logging configuration, using a factory object.
