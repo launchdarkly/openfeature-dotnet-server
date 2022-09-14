@@ -1,4 +1,6 @@
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
+using LaunchDarkly.Sdk.Server;
 using OpenFeature.SDK.Model;
 using Xunit;
 
@@ -6,6 +8,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
     public class EvalContextExtensionsTests
     {
+        private readonly EvalContextConverter _converter =
+            new EvalContextConverter(Components.NoLogging.CreateLoggingConfiguration().LogAdapter.Logger("test"));
+        
         [Fact]
         public void ItCanHandleBuiltInAttributes()
         {
@@ -21,7 +26,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             evaluationContext.Add("country", "country");
             evaluationContext.Add("anonymous", true);
 
-            var convertedUser = evaluationContext.ToLdUser();
+            var convertedUser = _converter.ToLdUser(evaluationContext);
 
             var expectedUser = User.Builder("the-key")
                 .Secondary("secondary")
@@ -39,6 +44,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void WhatHappens()
+        {
+            _converter.ToLdUser(new EvaluationContext());
+        }
+
+        [Fact]
         public void ItSupportsCustomAttributes()
         {
             const string attributeKey = "some-custom-attribute";
@@ -47,7 +58,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             evaluationContext.Add("targetingKey", "the-key");
             evaluationContext.Add(attributeKey, attributeValue);
 
-            var ldUser = evaluationContext.ToLdUser();
+            var ldUser = _converter.ToLdUser(evaluationContext);
             Assert.Equal(
                 attributeValue,
                 ldUser.GetAttribute(UserAttribute.ForName(attributeKey)).AsString
@@ -59,7 +70,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         {
             var evaluationContext = new EvaluationContext();
             evaluationContext.Add("key", "the-key");
-            Assert.Equal("the-key", evaluationContext.ToLdUser().Key);
+            Assert.Equal("the-key", _converter.ToLdUser(evaluationContext).Key);
         }
         
         [Fact]
@@ -68,7 +79,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var evaluationContext = new EvaluationContext();
             evaluationContext.Add("key", "key");
             evaluationContext.Add("targetingKey", "targeting-key");
-            Assert.Equal("targeting-key", evaluationContext.ToLdUser().Key);
+            Assert.Equal("targeting-key", _converter.ToLdUser(evaluationContext).Key);
         }
     }
 }
