@@ -1,6 +1,7 @@
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
+using LaunchDarkly.Sdk.Server.Integrations;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
 using OpenFeature.SDK.Model;
@@ -20,6 +21,26 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var provider = new Provider(mock.Object);
 
             Assert.Equal("LaunchDarkly.OpenFeature.ServerProvider", provider.GetMetadata().Name);
+        }
+
+        [Fact]
+        public void ItCanBeConstructedWithLoggingConfiguration()
+        {
+            var logCapture = new LogCapture();
+            var mock = new Mock<ILdClient>();
+            var provider = new Provider(mock.Object, ProviderConfiguration.Builder().Logging(
+                Components.Logging().Adapter(logCapture)
+            ).Build());
+
+            // This context is malformed and will cause a log.
+            var evaluationContext = new EvaluationContext();
+            evaluationContext.Add("targetingKey", "the-key");
+            evaluationContext.Add("key", "the-key");
+
+            provider.ResolveBooleanValue("the-flag", false, evaluationContext);
+            Assert.True(logCapture.HasMessageWithText(LogLevel.Warn,
+                "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
+                "attribute will be discarded."));
         }
 
         [Fact]
