@@ -45,7 +45,7 @@ For information on using the OpenFeature client please refer to the [OpenFeature
 
 ## OpenFeature Specific Considerations
 
-When evaluating a `User` with the .NET client a string `key` attribute would normally be required. When using OpenFeature the `targetingKey` attribute should be used instead of `key`. If a `key` attribute is provided in the `EvaluationContext`, then it will be discarded in favor of `targetingKey`. If a `targetingKey` is not provided, or if the `EvaluationContext` is omitted entirely, then the `defaultValue` will be returned from OpenFeature evaluation methods.
+When evaluating a `User` with the LaunchDarkly Server-Side SDK for .NET a string `key` attribute would normally be required. When using OpenFeature the `targetingKey` attribute should be used instead of `key`. If a `key` attribute is provided in the `EvaluationContext`, then it will be discarded in favor of `targetingKey`. If a `targetingKey` is not provided, or if the `EvaluationContext` is omitted entirely, then the `defaultValue` will be returned from OpenFeature evaluation methods.
 
 Other fields normally included in a `User` may be added to the `EvaluationContext`. Any `custom` attributes can be added to the top level of the evaluation context, and they will operate as if they were `custom` attributes on an `User`. Attributes which are typically top level on an `LDUser` should be of the same types that are specified for a `User` or they will not operate as intended.
 
