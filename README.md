@@ -29,6 +29,9 @@ dotnet add OpenFeature
 
 ### Usage
 ```
+using LaunchDarkly.OpenFeature.ServerProvider;
+using LaunchDarkly.Sdk.Server;
+
 var config = Configuration.Builder("my-sdk-key")
     .StartWaitTime(TimeSpan.FromSeconds(10))
     .Build();
