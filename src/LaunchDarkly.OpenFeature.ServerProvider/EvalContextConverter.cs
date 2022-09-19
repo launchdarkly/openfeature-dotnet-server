@@ -44,6 +44,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// </param>
         private void Extract(string key, LdValue value, UserBuilderStringSetter setter)
         {
+            if (value.IsNull)
+            {
+                // Ignore null values.
+                return;
+            }
+
             if (value.IsString)
             {
                 setter(value.AsString);
@@ -54,7 +60,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <summary>
-        /// Extract a bool value and log an error if the value was not a string.
+        /// Extract a bool value and log an error if the value was not a boolean.
         /// </summary>
         /// <param name="key">The key of the value</param>
         /// <param name="value">The value to extract</param>

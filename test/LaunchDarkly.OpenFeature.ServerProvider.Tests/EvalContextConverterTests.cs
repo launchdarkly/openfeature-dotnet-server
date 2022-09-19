@@ -52,6 +52,30 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void ItAllowsNullForStringBuiltInAttributes()
+        {
+            var evaluationContext = new EvaluationContext();
+            evaluationContext.Add("targetingKey", "the-key");
+            evaluationContext.Add("secondary", (string)null);
+            evaluationContext.Add("name", (string)null);
+            evaluationContext.Add("firstName", (string)null);
+            evaluationContext.Add("lastName", (string)null);
+            evaluationContext.Add("email", (string)null);
+            evaluationContext.Add("avatar", (string)null);
+            evaluationContext.Add("ip", (string)null);
+            evaluationContext.Add("country", (string)null);
+
+            var convertedUser = _converter.ToLdUser(evaluationContext);
+
+            var expectedUser = User.Builder("the-key")
+                .Build();
+
+            Assert.Equal(expectedUser, convertedUser);
+            // Nothing is wrong with this, so it shouldn't have produced any messages.
+            Assert.Empty(_logCapture.GetMessages());
+        }
+
+        [Fact]
         public void ItLogsAndErrorWhenThereIsNoTargetingKey()
         {
             _converter.ToLdUser(new EvaluationContext());
