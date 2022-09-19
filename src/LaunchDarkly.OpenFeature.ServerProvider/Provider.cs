@@ -25,7 +25,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     /// </example>
     public sealed class Provider : FeatureProvider
     {
-        private readonly Metadata _metadata = new Metadata("LaunchDarkly.OpenFeature.ServerProvider");
+        private const string NameSpace = "OpenFeature.ServerProvider";
+        private readonly Metadata _metadata = new Metadata($"LaunchDarkly.{NameSpace}");
         private readonly ILdClient _client;
         private readonly EvalContextConverter _contextConverter;
 
@@ -40,7 +41,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             var logConfig = (config?.LoggingConfigurationFactory ?? Components.Logging())
                 .CreateLoggingConfiguration();
 
-            var log = logConfig.LogAdapter.Logger(logConfig.BaseLoggerName ?? _metadata.Name);
+            // If there is a base name for the logger, then use the namespace as the name
+            var log = logConfig.LogAdapter.Logger(logConfig.BaseLoggerName != null ? NameSpace : _metadata.Name);
             _contextConverter = new EvalContextConverter(log);
         }
 

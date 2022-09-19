@@ -52,7 +52,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
-        public void ItAllowsNullForStringBuiltInAttributes()
+        public void ItAllowsNullForBuiltInAttributes()
         {
             var evaluationContext = new EvaluationContext();
             evaluationContext.Add("targetingKey", "the-key");
@@ -64,6 +64,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             evaluationContext.Add("avatar", (string)null);
             evaluationContext.Add("ip", (string)null);
             evaluationContext.Add("country", (string)null);
+            // Cannot just pass in null, cannot pass in a nullable bool, have to either case to a reference type like
+            // string, or construct a value instance and pass that.
+            evaluationContext.Add("anonymous", new Value());
 
             var convertedUser = _converter.ToLdUser(evaluationContext);
 

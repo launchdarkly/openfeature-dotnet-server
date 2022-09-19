@@ -70,6 +70,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// </param>
         private void Extract(string key, LdValue value, UserBuilderBoolSetter setter)
         {
+            if (value.IsNull)
+            {
+                // Ignore null values.
+                return;
+            }
+
             if (value.Type == LdValueType.Bool)
             {
                 setter(value.AsBool);
