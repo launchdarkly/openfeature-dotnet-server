@@ -12,9 +12,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     {
         private readonly Logger _log;
 
-        private delegate IUserBuilder UserBuilderStringSetter(string val);
-        private delegate IUserBuilder UserBuilderBoolSetter(bool val);
-
         /// <summary>
         /// Construct a new instance of the converter.
         /// </summary>
@@ -42,7 +39,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, UserBuilderStringSetter setter)
+        private void Extract(string key, LdValue value, Func<string, IUserBuilder> setter)
         {
             if (value.IsNull)
             {
@@ -68,7 +65,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, UserBuilderBoolSetter setter)
+        private void Extract(string key, LdValue value, Func<bool, IUserBuilder> setter)
         {
             if (value.IsNull)
             {
