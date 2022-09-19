@@ -12,6 +12,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     {
         private readonly Logger _log;
 
+        private delegate IUserBuilder UserBuilderStringSetter(string val);
+        private delegate IUserBuilder UserBuilderBoolSetter(bool val);
+
         /// <summary>
         /// Construct a new instance of the converter.
         /// </summary>
@@ -39,7 +42,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, Action<string> setter)
+        private void Extract(string key, LdValue value, UserBuilderStringSetter setter)
         {
             if (value.IsString)
             {
@@ -59,7 +62,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, Action<bool> setter)
+        private void Extract(string key, LdValue value, UserBuilderBoolSetter setter)
         {
             if (value.Type == LdValueType.Bool)
             {
@@ -87,31 +90,31 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 case "key":
                     break;
                 case "secondary":
-                    Extract(key, ldValue, val => builder.Secondary(val));
+                    Extract(key, ldValue, builder.Secondary);
                     break;
                 case "name":
-                    Extract(key, ldValue, val => builder.Name(val));
+                    Extract(key, ldValue, builder.Name);
                     break;
                 case "firstName":
-                    Extract(key, ldValue, val => builder.FirstName(val));
+                    Extract(key, ldValue, builder.FirstName);
                     break;
                 case "lastName":
-                    Extract(key, ldValue, val => builder.LastName(val));
+                    Extract(key, ldValue, builder.LastName);
                     break;
                 case "email":
-                    Extract(key, ldValue, val => builder.Email(val));
+                    Extract(key, ldValue, builder.Email);
                     break;
                 case "avatar":
-                    Extract(key, ldValue, val => builder.Avatar(val));
+                    Extract(key, ldValue, builder.Avatar);
                     break;
                 case "ip":
-                    Extract(key, ldValue, val => builder.IPAddress(val));
+                    Extract(key, ldValue, builder.IPAddress);
                     break;
                 case "country":
-                    Extract(key, ldValue, val => builder.Country(val));
+                    Extract(key, ldValue, builder.Country);
                     break;
                 case "anonymous":
-                    Extract(key, ldValue, val => builder.Anonymous(val));
+                    Extract(key, ldValue, builder.Anonymous);
                     break;
                 default:
                     // Was not a built-in attribute.
