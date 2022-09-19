@@ -41,8 +41,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             var logConfig = (config?.LoggingConfigurationFactory ?? Components.Logging())
                 .CreateLoggingConfiguration();
 
-            // If there is a base name for the logger, then use the namespace as the name
-            var log = logConfig.LogAdapter.Logger(logConfig.BaseLoggerName != null ? NameSpace : _metadata.Name);
+            // If there is a base name for the logger, then use the namespace as the name.
+            var log = logConfig.LogAdapter.Logger(logConfig.BaseLoggerName != null
+                ? $"{logConfig.BaseLoggerName}.{NameSpace}"
+                : _metadata.Name);
             _contextConverter = new EvalContextConverter(log);
         }
 
