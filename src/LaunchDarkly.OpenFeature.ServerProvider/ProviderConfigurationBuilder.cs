@@ -37,7 +37,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// </para>
         /// <para>
         /// The provider uses the same logging mechanism as the LaunchDarkly Server-Side SDK for .NET.
-        ///
+        /// </para>
+        /// <para>
         /// For more about how logging works in the SDK, see the <a href="https://docs.launchdarkly.com/sdk/features/logging#net">SDK
         /// SDK reference guide</a>.
         /// </para>
