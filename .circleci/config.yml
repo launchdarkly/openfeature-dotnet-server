@@ -69,7 +69,6 @@ jobs:
       - run:
           name: restore LaunchDarkly.OpenFeature.ServerProvider.Tests
           command: dotnet restore test/LaunchDarkly.OpenFeature.ServerProvider.Tests
-      - run: mkdir -p /tmp/circle-reports
       - run:
           name: run tests
           command: dotnet test test/LaunchDarkly.OpenFeature.ServerProvider.Tests/LaunchDarkly.OpenFeature.ServerProvider.Tests.csproj
@@ -94,7 +93,6 @@ jobs:
       - run:
           name: install project dependencies
           command: dotnet restore test/LaunchDarkly.OpenFeature.ServerProvider.Tests
-      - run: New-Item -Path "circle-reports" -ItemType "directory"
       - run:
           name: run tests
           command: dotnet test test/LaunchDarkly.OpenFeature.ServerProvider.Tests/LaunchDarkly.OpenFeature.ServerProvider.Tests.csproj
