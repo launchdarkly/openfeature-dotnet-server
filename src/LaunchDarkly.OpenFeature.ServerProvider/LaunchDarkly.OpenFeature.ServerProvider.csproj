@@ -34,17 +34,11 @@
 
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.ServerSdk" Version="6.3.2" />
+    <PackageReference Include="OpenFeature" Version="0.1.5" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="OpenFeature.SDK">
-      <HintPath>..\..\..\..\open-feature\dotnet-sdk\src\OpenFeature.SDK\bin\Debug\netstandard2.0\OpenFeature.SDK.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
