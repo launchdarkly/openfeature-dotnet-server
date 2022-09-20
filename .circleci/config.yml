@@ -26,7 +26,7 @@ workflows:
             - build-all
 
 orbs:
-  win: circleci/windows@4.1.1
+  win: circleci/windows@5.0.0
 
 jobs:
   build-all:
