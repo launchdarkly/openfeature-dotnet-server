@@ -13,7 +13,7 @@ workflows:
           requires:
             - build-all
       - test-windows:
-          name: .NET 6.0 - Linux
+          name: .NET 6.0 - Windows
           build-target-framework: net6.0
           test-target-framework: net6.0
           requires:
@@ -96,7 +96,7 @@ jobs:
           at: src/LaunchDarkly.OpenFeature.ServerProvider
       - run:
           name: install project dependencies
-          command: dotnet restore test/LaunchDarkly.ServerSdk.Tests
+          command: dotnet restore test/LaunchDarkly.OpenFeature.ServerProvider.Tests
       - run: New-Item -Path "circle-reports" -ItemType "directory"
       - run:
           name: run tests
