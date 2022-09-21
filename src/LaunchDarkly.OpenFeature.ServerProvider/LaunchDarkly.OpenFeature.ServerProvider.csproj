@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Version>0.0.1</Version>
     <!-- The BUILDFRAMEWORKS variable allows us to override the target frameworks with a
          single framework that we are testing; this allows us to test with older SDK
          versions that would error out if they saw any newer target frameworks listed
@@ -31,6 +32,12 @@
     <!-- fail if XML comments are missing or invalid -->
     <WarningsAsErrors>1570,1571,1572,1573,1574,1580,1581,1584,1591,1710,1711,1712</WarningsAsErrors>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>LaunchDarkly.OpenFeature.ServerProvider.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.ServerSdk" Version="6.3.2" />
