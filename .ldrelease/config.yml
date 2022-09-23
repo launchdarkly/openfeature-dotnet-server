@@ -1,0 +1,23 @@
+version: 2
+
+publications:
+  - url: https://nuget.org/packages/LaunchDarkly.OpenFeature.ServerProvider
+    description: NuGet
+
+jobs:
+  - docker: {}
+    template:
+      name: dotnet6-linux
+    env:
+      LD_RELEASE_DOCS_TARGET_FRAMEWORK: netstandard2.0
+      LD_RELEASE_TEST_TARGET_FRAMEWORK: net6.0
+
+branches:
+  - name: main
+
+documentation:
+  title: LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET
+  gitHubPages: true
+
+sdk:
+  displayName: ".NET OpenFeature Provider Server-Side"
