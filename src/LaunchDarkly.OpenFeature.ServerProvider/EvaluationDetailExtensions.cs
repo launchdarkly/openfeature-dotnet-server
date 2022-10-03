@@ -1,7 +1,7 @@
 using System;
 using LaunchDarkly.Sdk;
-using OpenFeature.SDK.Constant;
-using OpenFeature.SDK.Model;
+using OpenFeatureSDK.Constant;
+using OpenFeatureSDK.Model;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
@@ -71,6 +71,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     errorType = ErrorType.FlagNotFound;
                     break;
                 case EvaluationErrorKind.UserNotSpecified:
+                    errorType = ErrorType.TargetingKeyMissing;
+                    break;
                 case EvaluationErrorKind.Exception:
                 case null:
                     // All general errors.
