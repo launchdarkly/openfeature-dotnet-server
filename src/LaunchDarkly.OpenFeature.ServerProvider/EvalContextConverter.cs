@@ -1,7 +1,7 @@
 using System;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
-using OpenFeature.SDK.Model;
+using OpenFeatureSDK.Model;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {

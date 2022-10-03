@@ -4,7 +4,7 @@ using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Integrations;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
-using OpenFeature.SDK.Model;
+using OpenFeatureSDK.Model;
 using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests

@@ -3,8 +3,8 @@ using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
-using OpenFeature.SDK;
-using OpenFeature.SDK.Model;
+using OpenFeatureSDK;
+using OpenFeatureSDK.Model;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
@@ -19,9 +19,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     ///     var ldClient  = new LdClient(config);
     ///     var provider = new Provider(ldClient);
     ///
-    ///     OpenFeature.SDK.OpenFeature.Instance.SetProvider(provider);
+    ///     OpenFeatureSDK.OpenFeature.Instance.SetProvider(provider);
     ///
-    ///     var client = OpenFeature.SDK.OpenFeature.Instance.GetClient();
+    ///     var client = OpenFeatureSDK.OpenFeature.Instance.GetClient();
     /// </example>
     public sealed class Provider : FeatureProvider
     {
