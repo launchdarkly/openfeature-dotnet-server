@@ -54,7 +54,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.ErrorReason(EvaluationErrorKind.Exception))
                     .ToResolutionDetails("test-flag").ErrorType);
             
-            Assert.Equal(ErrorType.General,
+            Assert.Equal(ErrorType.TargetingKeyMissing,
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.ErrorReason(EvaluationErrorKind.UserNotSpecified))
                     .ToResolutionDetails("test-flag").ErrorType);
             

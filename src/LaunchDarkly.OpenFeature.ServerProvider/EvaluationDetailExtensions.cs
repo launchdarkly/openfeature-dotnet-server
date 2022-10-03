@@ -71,7 +71,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     errorType = ErrorType.FlagNotFound;
                     break;
                 case EvaluationErrorKind.UserNotSpecified:
-                    errorType = ErrorType.InvalidContext;
+                    errorType = ErrorType.TargetingKeyMissing;
                     break;
                 case EvaluationErrorKind.Exception:
                 case null:
