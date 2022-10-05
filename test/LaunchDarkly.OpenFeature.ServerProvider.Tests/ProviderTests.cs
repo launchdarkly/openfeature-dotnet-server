@@ -33,9 +33,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             ).Build());
 
             // This context is malformed and will cause a log.
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
-            evaluationContext.Add("key", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Set("key", "the-key")
+                .Build();
 
             provider.ResolveBooleanValue("the-flag", false, evaluationContext);
             Assert.True(logCapture.HasMessageWithText(LogLevel.Warn,
@@ -55,9 +56,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             ).Build());
 
             // This context is malformed and will cause a log.
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
-            evaluationContext.Add("key", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Set("key", "the-key")
+                .Build();
 
             provider.ResolveBooleanValue("the-flag", false, evaluationContext);
 
@@ -67,8 +69,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanDoABooleanEvaluation()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.BoolVariationDetail("flag-key",
                     _converter.ToLdUser(evaluationContext), false))
@@ -82,8 +85,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanDoAStringEvaluation()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.StringVariationDetail("flag-key",
                     _converter.ToLdUser(evaluationContext), "default"))
@@ -97,8 +101,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanDoAnIntegerEvaluation()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.IntVariationDetail("flag-key",
                     _converter.ToLdUser(evaluationContext), 0))
@@ -112,8 +117,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanDoADoubleEvaluation()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.DoubleVariationDetail("flag-key",
                     _converter.ToLdUser(evaluationContext), 0))
@@ -127,8 +133,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanDoAValueEvaluation()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.JsonVariationDetail("flag-key",
                     It.IsAny<User>(), It.IsAny<LdValue>()))

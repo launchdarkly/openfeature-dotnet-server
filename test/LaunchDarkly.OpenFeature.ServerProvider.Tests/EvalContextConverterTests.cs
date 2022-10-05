@@ -20,17 +20,17 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanHandleBuiltInAttributes()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
-            evaluationContext.Add("secondary", "secondary");
-            evaluationContext.Add("name", "name");
-            evaluationContext.Add("firstName", "firstName");
-            evaluationContext.Add("lastName", "lastName");
-            evaluationContext.Add("email", "email");
-            evaluationContext.Add("avatar", "avatar");
-            evaluationContext.Add("ip", "ip");
-            evaluationContext.Add("country", "country");
-            evaluationContext.Add("anonymous", true);
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Set("secondary", "secondary")
+                .Set("name", "name")
+                .Set("firstName", "firstName")
+                .Set("lastName", "lastName")
+                .Set("email", "email")
+                .Set("avatar", "avatar")
+                .Set("ip", "ip")
+                .Set("country", "country")
+                .Set("anonymous", true).Build();
 
             var convertedUser = _converter.ToLdUser(evaluationContext);
 
@@ -54,19 +54,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItAllowsNullForBuiltInAttributes()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
-            evaluationContext.Add("secondary", (string)null);
-            evaluationContext.Add("name", (string)null);
-            evaluationContext.Add("firstName", (string)null);
-            evaluationContext.Add("lastName", (string)null);
-            evaluationContext.Add("email", (string)null);
-            evaluationContext.Add("avatar", (string)null);
-            evaluationContext.Add("ip", (string)null);
-            evaluationContext.Add("country", (string)null);
-            // Cannot just pass in null, cannot pass in a nullable bool, have to either case to a reference type like
-            // string, or construct a value instance and pass that.
-            evaluationContext.Add("anonymous", new Value());
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Set("secondary", (string) null)
+                .Set("name", (string) null)
+                .Set("firstName", (string) null)
+                .Set("lastName", (string) null)
+                .Set("email", (string) null)
+                .Set("avatar", (string) null)
+                .Set("ip", (string) null)
+                .Set("country", (string) null)
+                // Cannot just pass in null, cannot pass in a nullable bool, have to either case to a reference type like
+                // string, or construct a value instance and pass that.
+                .Set("anonymous", new Value())
+                .Build();
 
             var convertedUser = _converter.ToLdUser(evaluationContext);
 
@@ -81,7 +82,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItLogsAndErrorWhenThereIsNoTargetingKey()
         {
-            _converter.ToLdUser(new EvaluationContext());
+            _converter.ToLdUser(EvaluationContext.Empty);
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
                 "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
                 "must be a string."));
@@ -90,7 +91,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItLogsAWarningWhenBothTargetingKeyAndKeyAreDefined()
         {
-            _converter.ToLdUser(new EvaluationContext().Add("targetingKey", "key").Add("key", "key"));
+            _converter.ToLdUser(EvaluationContext.Builder().Set("targetingKey", "key").Set("key", "key").Build());
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
                 "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
                 "attribute will be discarded."));
@@ -108,10 +109,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [InlineData("anonymous", "bool")]
         public void ItLogsErrorsWhenTypesAreIncorrectForBuiltInAttributes(string attr, string type)
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "key");
-            //Number isn't valid for any built-in,
-            evaluationContext.Add(attr, 1);
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "key")
+                //Number isn't valid for any built-in,
+                .Set(attr, 1).Build();
 
             _converter.ToLdUser(evaluationContext);
 
@@ -125,9 +126,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         {
             const string attributeKey = "some-custom-attribute";
             const string attributeValue = "the attribute value";
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("targetingKey", "the-key");
-            evaluationContext.Add(attributeKey, attributeValue);
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Set(attributeKey, attributeValue)
+                .Build();
 
             var ldUser = _converter.ToLdUser(evaluationContext);
             Assert.Equal(
@@ -139,17 +141,19 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanUseKeyAttribute()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("key", "the-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("key", "the-key")
+                .Build();
             Assert.Equal("the-key", _converter.ToLdUser(evaluationContext).Key);
         }
 
         [Fact]
         public void ItUsesTheTargetingKeyInFavorOfKey()
         {
-            var evaluationContext = new EvaluationContext();
-            evaluationContext.Add("key", "key");
-            evaluationContext.Add("targetingKey", "targeting-key");
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("key", "key")
+                .Set("targetingKey", "targeting-key")
+                .Build();
             Assert.Equal("targeting-key", _converter.ToLdUser(evaluationContext).Key);
         }
     }
