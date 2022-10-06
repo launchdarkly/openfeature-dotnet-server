@@ -2,6 +2,14 @@ using LaunchDarkly.Sdk.Server.Interfaces;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
+    /// <summary>
+    /// Configuration options for <see cref="Provider"/>. This class should normally be constructed with
+    /// <see cref="ProviderConfiguration.Builder()"/>.
+    /// </summary>
+    /// <remarks>
+    /// Instances of <see cref="ProviderConfiguration"/> are immutable once created. They can be created using a builder
+    /// pattern with <see cref="ProviderConfiguration.Builder()"/>.
+    /// </remarks>
     public sealed class ProviderConfiguration
     {
         /// <summary>
@@ -20,7 +28,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///         .Build();
         /// </code>
         /// </example>
-        /// <param name="sdkKey">the SDK key for your LaunchDarkly environment</param>
         /// <returns>a builder object</returns>
         public static ProviderConfigurationBuilder Builder()
         {
