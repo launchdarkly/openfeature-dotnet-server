@@ -4,6 +4,22 @@ using LaunchDarkly.Sdk.Server.Interfaces;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
+    /// <summary>
+    /// A mutable object that uses the Builder pattern to specify properties for a <see cref="ProviderConfiguration"/> object.
+    /// </summary>
+    /// <remarks>
+    /// Obtain an instance of this class by calling <see cref="ProviderConfiguration.Builder()"/>.
+    ///
+    /// All of the builder methods for setting a configuration property return a reference to the same builder, so they can be
+    /// chained together.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    ///     var config = ProviderConfigurationBuilder.Builder()
+    ///         .Logging(Components.NoLogging)
+    ///         .Build();
+    /// </code>
+    /// </example>
     public sealed class ProviderConfigurationBuilder
     {
         #region Internal properties

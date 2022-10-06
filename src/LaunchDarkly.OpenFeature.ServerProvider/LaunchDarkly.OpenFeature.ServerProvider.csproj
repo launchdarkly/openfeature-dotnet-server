@@ -46,4 +46,8 @@
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\LaunchDarkly.OpenFeature.ServerProvider.xml</DocumentationFile>
+  </PropertyGroup>
 </Project>

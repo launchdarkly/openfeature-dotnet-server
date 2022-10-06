@@ -50,28 +50,34 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         #region FeatureProvider Implementation
 
+        /// <inheritdoc />
         public override Metadata GetMetadata() => _metadata;
 
+        /// <inheritdoc />
         public override Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
             .BoolVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
+        /// <inheritdoc />
         public override Task<ResolutionDetails<string>> ResolveStringValue(string flagKey, string defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
             .StringVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
+        /// <inheritdoc />
         public override Task<ResolutionDetails<int>> ResolveIntegerValue(string flagKey, int defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
             .IntVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
+        /// <inheritdoc />
         public override Task<ResolutionDetails<double>> ResolveDoubleValue(string flagKey, double defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
             .DoubleVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
+        /// <inheritdoc />
         public override Task<ResolutionDetails<Value>> ResolveStructureValue(string flagKey, Value defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
             .JsonVariationDetail(flagKey, _contextConverter.ToLdUser(context), LdValue.Null)
