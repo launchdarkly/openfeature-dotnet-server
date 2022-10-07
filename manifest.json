@@ -1,0 +1,140 @@
+{
+  "homepages": [],
+  "source_base_path": "/tmp/project-releaser/temp/build-docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.OpenFeature.ServerProvider.Provider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html",
+          "hash": "2DuzVXQZtT5YqRunPYxDzfHNVJaFYmsaI4Bs9e8xdLw="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfiguration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfiguration.html",
+          "hash": "RDozmrlzIkviin23dtLv1Okqd3Y3g5vl4bi51Msf3DU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.html",
+          "hash": "IXIokbilHJrShFNu3UtpugwBqNo6ExIj9WsRQWC7xeM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.OpenFeature.ServerProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.OpenFeature.ServerProvider.html",
+          "hash": "HsF7jeVIoAmJve8Xi/tJnElTaFiABcCsPac6Z4KBrZQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "build/api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html",
+          "hash": "t/md4yd+j3jaU2+TyvKbnE14QcfPLwM+sg8MHSqPuZc="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html",
+          "hash": "0tjSo7dqct5Lk3n+8FqvUygfSpZu19b2ygCxA2y3Msc="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html",
+          "hash": "v2oWRfMjfQhmMl1wTEkEQMzr8l/Ym6+URaL6QiLnCQk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    }
+  ],
+  "incremental_info": [
+    {
+      "status": {
+        "can_incremental": false,
+        "details": "Cannot build incrementally because last build info is missing.",
+        "incrementalPhase": "build",
+        "total_file_count": 0,
+        "skipped_file_count": 0,
+        "full_build_reason_code": "NoAvailableBuildCache"
+      },
+      "processors": {
+        "ConceptualDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 1,
+          "skipped_file_count": 0
+        },
+        "ManagedReferenceDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 5,
+          "skipped_file_count": 0
+        },
+        "TocDocumentProcessor": {
+          "can_incremental": false,
+          "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
+          "incrementalPhase": "build",
+          "total_file_count": 0,
+          "skipped_file_count": 0
+        }
+      }
+    },
+    {
+      "status": {
+        "can_incremental": false,
+        "details": "Cannot support incremental post processing, the reason is: last post processor info is null.",
+        "incrementalPhase": "postProcessing",
+        "total_file_count": 0,
+        "skipped_file_count": 0
+      },
+      "processors": {}
+    }
+  ],
+  "version_info": {},
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
