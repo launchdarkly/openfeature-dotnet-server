@@ -42,11 +42,6 @@
     <PackageReference Include="OpenFeature" Version="0.3.0" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <AssemblyOriginatorKeyFile>../../LaunchDarkly.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\LaunchDarkly.OpenFeature.ServerProvider.xml</DocumentationFile>
   </PropertyGroup>
