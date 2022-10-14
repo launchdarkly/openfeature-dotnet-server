@@ -29,12 +29,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 case LdValueType.Array:
                     return new Value(value.List.Select(ToValue).ToList());
                 case LdValueType.Object:
-                    var ofStructure = new Structure();
+                    var structureBuilder = Structure.Builder();
                     foreach (var kvp in value.Dictionary)
                     {
-                        ofStructure.Add(kvp.Key, ToValue(kvp.Value));
+                        structureBuilder.Set(kvp.Key, ToValue(kvp.Value));
                     }
-                    return new Value(ofStructure);
+                    return new Value(structureBuilder.Build());
                 default:
                     throw new ArgumentOutOfRangeException();
             }

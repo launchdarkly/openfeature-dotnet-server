@@ -82,18 +82,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanConvertStructures()
         {
-            var ofStructure = new Structure
-            {
-                {"true", true},
-                {"number", 42},
-                {"string", "string"}
-            };
-            var secondStructure = new Structure
-            {
-                {"number", 84},
-                {"string", "another-string"}
-            };
-            ofStructure.Add("structure", secondStructure);
+            var secondStructure = Structure.Builder()
+                .Set("number", 84)
+                .Set("string", "another-string")
+                .Build();
+
+            var ofStructure = Structure.Builder()
+                .Set("true", true)
+                .Set("number", 42)
+                .Set("string", "string")
+                .Set("structure", secondStructure)
+                .Build();
+
             var ofValue = new Value(ofStructure);
             var value = ofValue.ToLdValue();
 
