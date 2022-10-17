@@ -37,11 +37,11 @@ references:
   commentId: Overload:LaunchDarkly.OpenFeature.ServerProvider.Provider.GetMetadata
   fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.GetMetadata
   nameWithType: Provider.GetMetadata
-- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeatureSDK.Model.EvaluationContext)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeature.Model.EvaluationContext)
   name: ResolveBooleanValue(String, Boolean, EvaluationContext)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveBooleanValue_System_String_System_Boolean_OpenFeatureSDK_Model_EvaluationContext_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeatureSDK.Model.EvaluationContext)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String, System.Boolean, OpenFeatureSDK.Model.EvaluationContext)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveBooleanValue_System_String_System_Boolean_OpenFeature_Model_EvaluationContext_
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeature.Model.EvaluationContext)
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String, System.Boolean, OpenFeature.Model.EvaluationContext)
   nameWithType: Provider.ResolveBooleanValue(String, Boolean, EvaluationContext)
 - uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue*
   name: ResolveBooleanValue
@@ -49,11 +49,11 @@ references:
   commentId: Overload:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue
   fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue
   nameWithType: Provider.ResolveBooleanValue
-- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeatureSDK.Model.EvaluationContext)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeature.Model.EvaluationContext)
   name: ResolveDoubleValue(String, Double, EvaluationContext)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveDoubleValue_System_String_System_Double_OpenFeatureSDK_Model_EvaluationContext_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeatureSDK.Model.EvaluationContext)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String, System.Double, OpenFeatureSDK.Model.EvaluationContext)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveDoubleValue_System_String_System_Double_OpenFeature_Model_EvaluationContext_
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeature.Model.EvaluationContext)
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String, System.Double, OpenFeature.Model.EvaluationContext)
   nameWithType: Provider.ResolveDoubleValue(String, Double, EvaluationContext)
 - uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue*
   name: ResolveDoubleValue
@@ -61,11 +61,11 @@ references:
   commentId: Overload:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue
   fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue
   nameWithType: Provider.ResolveDoubleValue
-- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeatureSDK.Model.EvaluationContext)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeature.Model.EvaluationContext)
   name: ResolveIntegerValue(String, Int32, EvaluationContext)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveIntegerValue_System_String_System_Int32_OpenFeatureSDK_Model_EvaluationContext_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeatureSDK.Model.EvaluationContext)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String, System.Int32, OpenFeatureSDK.Model.EvaluationContext)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveIntegerValue_System_String_System_Int32_OpenFeature_Model_EvaluationContext_
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeature.Model.EvaluationContext)
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String, System.Int32, OpenFeature.Model.EvaluationContext)
   nameWithType: Provider.ResolveIntegerValue(String, Int32, EvaluationContext)
 - uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue*
   name: ResolveIntegerValue
@@ -73,11 +73,11 @@ references:
   commentId: Overload:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue
   fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue
   nameWithType: Provider.ResolveIntegerValue
-- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeatureSDK.Model.EvaluationContext)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeature.Model.EvaluationContext)
   name: ResolveStringValue(String, String, EvaluationContext)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStringValue_System_String_System_String_OpenFeatureSDK_Model_EvaluationContext_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeatureSDK.Model.EvaluationContext)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String, System.String, OpenFeatureSDK.Model.EvaluationContext)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStringValue_System_String_System_String_OpenFeature_Model_EvaluationContext_
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeature.Model.EvaluationContext)
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String, System.String, OpenFeature.Model.EvaluationContext)
   nameWithType: Provider.ResolveStringValue(String, String, EvaluationContext)
 - uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue*
   name: ResolveStringValue
@@ -85,11 +85,11 @@ references:
   commentId: Overload:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue
   fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue
   nameWithType: Provider.ResolveStringValue
-- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeatureSDK.Model.Value,OpenFeatureSDK.Model.EvaluationContext)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeature.Model.Value,OpenFeature.Model.EvaluationContext)
   name: ResolveStructureValue(String, Value, EvaluationContext)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStructureValue_System_String_OpenFeatureSDK_Model_Value_OpenFeatureSDK_Model_EvaluationContext_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeatureSDK.Model.Value,OpenFeatureSDK.Model.EvaluationContext)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String, OpenFeatureSDK.Model.Value, OpenFeatureSDK.Model.EvaluationContext)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.Provider.html#LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStructureValue_System_String_OpenFeature_Model_Value_OpenFeature_Model_EvaluationContext_
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeature.Model.Value,OpenFeature.Model.EvaluationContext)
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String, OpenFeature.Model.Value, OpenFeature.Model.EvaluationContext)
   nameWithType: Provider.ResolveStructureValue(String, Value, EvaluationContext)
 - uid: LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue*
   name: ResolveStructureValue

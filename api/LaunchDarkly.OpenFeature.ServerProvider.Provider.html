@@ -73,7 +73,7 @@
   
   <h1 id="LaunchDarkly_OpenFeature_ServerProvider_Provider" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider" class="text-break">Class Provider
   </h1>
-  <div class="markdown level0 summary"><p>An OpenFeature <span class="xref">OpenFeatureSDK.FeatureProvider</span> which enables the use of the LaunchDarkly Server-Side SDK for .NET
+  <div class="markdown level0 summary"><p>An OpenFeature <span class="xref">OpenFeature.FeatureProvider</span> which enables the use of the LaunchDarkly Server-Side SDK for .NET
 with OpenFeature.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
@@ -93,8 +93,8 @@ with OpenFeature.</p>
 .Build();</p>
 <p>var ldClient  = new LdClient(config);
 var provider = new Provider(ldClient);</p>
-<p>OpenFeatureSDK.OpenFeature.Instance.SetProvider(provider);</p>
-<p>var client = OpenFeatureSDK.OpenFeature.Instance.GetClient();</p>
+<p>OpenFeature.Api.Instance.SetProvider(provider);</p>
+<p>var client = OpenFeature.Api.Instance.GetClient();</p>
 
   <h3 id="constructors">Constructors
   </h3>
@@ -151,13 +151,13 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.Metadata</span></td>
+        <td><span class="xref">OpenFeature.Model.Metadata</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <a id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveBooleanValue_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveBooleanValue_System_String_System_Boolean_OpenFeatureSDK_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeatureSDK.Model.EvaluationContext)">ResolveBooleanValue(String, Boolean, EvaluationContext)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveBooleanValue_System_String_System_Boolean_OpenFeature_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveBooleanValue(System.String,System.Boolean,OpenFeature.Model.EvaluationContext)">ResolveBooleanValue(String, Boolean, EvaluationContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -185,7 +185,7 @@ var provider = new Provider(ldClient);</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.EvaluationContext</span></td>
+        <td><span class="xref">OpenFeature.Model.EvaluationContext</span></td>
         <td><span class="parametername">context</span></td>
         <td></td>
       </tr>
@@ -201,13 +201,13 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeatureSDK.Model.ResolutionDetails</span>&lt;<span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeature.Model.ResolutionDetails</span>&lt;<span class="xref">System.Boolean</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <a id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveDoubleValue_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveDoubleValue_System_String_System_Double_OpenFeatureSDK_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeatureSDK.Model.EvaluationContext)">ResolveDoubleValue(String, Double, EvaluationContext)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveDoubleValue_System_String_System_Double_OpenFeature_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveDoubleValue(System.String,System.Double,OpenFeature.Model.EvaluationContext)">ResolveDoubleValue(String, Double, EvaluationContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -235,7 +235,7 @@ var provider = new Provider(ldClient);</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.EvaluationContext</span></td>
+        <td><span class="xref">OpenFeature.Model.EvaluationContext</span></td>
         <td><span class="parametername">context</span></td>
         <td></td>
       </tr>
@@ -251,13 +251,13 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeatureSDK.Model.ResolutionDetails</span>&lt;<span class="xref">System.Double</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeature.Model.ResolutionDetails</span>&lt;<span class="xref">System.Double</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <a id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveIntegerValue_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveIntegerValue_System_String_System_Int32_OpenFeatureSDK_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeatureSDK.Model.EvaluationContext)">ResolveIntegerValue(String, Int32, EvaluationContext)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveIntegerValue_System_String_System_Int32_OpenFeature_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveIntegerValue(System.String,System.Int32,OpenFeature.Model.EvaluationContext)">ResolveIntegerValue(String, Int32, EvaluationContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -285,7 +285,7 @@ var provider = new Provider(ldClient);</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.EvaluationContext</span></td>
+        <td><span class="xref">OpenFeature.Model.EvaluationContext</span></td>
         <td><span class="parametername">context</span></td>
         <td></td>
       </tr>
@@ -301,13 +301,13 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeatureSDK.Model.ResolutionDetails</span>&lt;<span class="xref">System.Int32</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeature.Model.ResolutionDetails</span>&lt;<span class="xref">System.Int32</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <a id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStringValue_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStringValue_System_String_System_String_OpenFeatureSDK_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeatureSDK.Model.EvaluationContext)">ResolveStringValue(String, String, EvaluationContext)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStringValue_System_String_System_String_OpenFeature_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStringValue(System.String,System.String,OpenFeature.Model.EvaluationContext)">ResolveStringValue(String, String, EvaluationContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -335,7 +335,7 @@ var provider = new Provider(ldClient);</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.EvaluationContext</span></td>
+        <td><span class="xref">OpenFeature.Model.EvaluationContext</span></td>
         <td><span class="parametername">context</span></td>
         <td></td>
       </tr>
@@ -351,13 +351,13 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeatureSDK.Model.ResolutionDetails</span>&lt;<span class="xref">System.String</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeature.Model.ResolutionDetails</span>&lt;<span class="xref">System.String</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <a id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStructureValue_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStructureValue_System_String_OpenFeatureSDK_Model_Value_OpenFeatureSDK_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeatureSDK.Model.Value,OpenFeatureSDK.Model.EvaluationContext)">ResolveStructureValue(String, Value, EvaluationContext)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_Provider_ResolveStructureValue_System_String_OpenFeature_Model_Value_OpenFeature_Model_EvaluationContext_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.Provider.ResolveStructureValue(System.String,OpenFeature.Model.Value,OpenFeature.Model.EvaluationContext)">ResolveStructureValue(String, Value, EvaluationContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -380,12 +380,12 @@ var provider = new Provider(ldClient);</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.Value</span></td>
+        <td><span class="xref">OpenFeature.Model.Value</span></td>
         <td><span class="parametername">defaultValue</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">OpenFeatureSDK.Model.EvaluationContext</span></td>
+        <td><span class="xref">OpenFeature.Model.EvaluationContext</span></td>
         <td><span class="parametername">context</span></td>
         <td></td>
       </tr>
@@ -401,7 +401,7 @@ var provider = new Provider(ldClient);</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeatureSDK.Model.ResolutionDetails</span>&lt;<span class="xref">OpenFeatureSDK.Model.Value</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">OpenFeature.Model.ResolutionDetails</span>&lt;<span class="xref">OpenFeature.Model.Value</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
