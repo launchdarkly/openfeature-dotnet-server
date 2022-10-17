@@ -1,7 +1,7 @@
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
-using OpenFeatureSDK.Model;
+using OpenFeature.Model;
 using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests

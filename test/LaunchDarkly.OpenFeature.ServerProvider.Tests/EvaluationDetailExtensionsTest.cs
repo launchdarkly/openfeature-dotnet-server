@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using LaunchDarkly.Sdk;
-using OpenFeatureSDK.Constant;
-using OpenFeatureSDK.Model;
+using OpenFeature.Constant;
+using OpenFeature.Model;
 using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests

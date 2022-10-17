@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using LaunchDarkly.Sdk;
-using OpenFeatureSDK.Model;
+using OpenFeature.Model;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
