@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.ServerSdk" Version="[6.3.2,7.0)" />
-    <PackageReference Include="OpenFeature" Version="0.5.0" />
+    <PackageReference Include="OpenFeature" Version="[1.0.0, 2.0.0)" />
   </ItemGroup>
 
   <PropertyGroup>

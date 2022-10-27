@@ -24,9 +24,9 @@ This version of the SDK is built for the following targets:
 ### Installation
 
 ```
-dotnet add LaunchDarkly.ServerSdk
-dotnet add LaunchDarkly.OpenFeature.ServerSdk
-dotnet add OpenFeature
+dotnet add package LaunchDarkly.ServerSdk
+dotnet add package LaunchDarkly.OpenFeature.ServerProvider
+dotnet add package OpenFeature
 ```
 
 ### Usage
@@ -41,7 +41,7 @@ var config = Configuration.Builder("my-sdk-key")
 var ldClient  = new LdClient(config);
 var provider = new Provider(ldClient);
 
-OpenFeature.SDK.OpenFeature.Instance.SetProvider(provider);
+OpenFeature.Api.Instance.SetProvider(provider);
 ```
 
 Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side/node-js) for instructions on getting started with using the SDK.
