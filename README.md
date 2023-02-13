@@ -44,7 +44,7 @@ var provider = new Provider(ldClient);
 OpenFeature.Api.Instance.SetProvider(provider);
 ```
 
-Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side/node-js) for instructions on getting started with using the SDK.
+Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side/dotnet) for instructions on getting started with using the SDK.
 
 For information on using the OpenFeature client please refer to the [OpenFeature Documentation](https://docs.openfeature.dev/docs/reference/concepts/evaluation-api/).
 
@@ -58,9 +58,9 @@ If a top level `custom` attribute is defined on the `EvaluationContext`, then th
 
 ## Learn more
 
-Check out our [documentation](http://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/sdk/server-side/node-js).
+Check out our [documentation](http://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/sdk/server-side/dotnet).
 
-The authoritative description of all properties and methods is in the [TypeScript documentation](https://launchdarkly.github.io/node-server-sdk/).
+The authoritative description of all properties and methods is in the [dotnet documentation](https://launchdarkly.github.io/dotnet-server-sdk/).
 
 ## Contributing
 
