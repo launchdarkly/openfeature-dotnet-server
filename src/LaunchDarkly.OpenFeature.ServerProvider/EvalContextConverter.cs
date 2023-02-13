@@ -149,6 +149,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             return BuildSingleLdContext(evaluationContext.AsDictionary(), kindString);
         }
 
+        /// <summary>
+        /// Convert an evaluation context into a multi-context.
+        /// </summary>
+        /// <param name="evaluationContext">The evaluation context to convert</param>
+        /// <returns>A converted multi-context</returns>
         private Context BuildMultiLdContext(EvaluationContext evaluationContext)
         {
             var multiBuilder = Context.MultiBuilder();
@@ -173,11 +178,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             return multiBuilder.Build();
         }
 
-        private Context BuildSingleLdContext(IImmutableDictionary<string, Value> evaluationContext, string kindString)
+        /// <summary>
+        /// Construct a single context from an immutable dictionary of attributes.
+        /// This can either be the entirety of a single context, or a part of a multi-context.
+        /// </summary>
+        /// <param name="attributes">The attributes to use when building the context</param>
+        /// <param name="kindString">The kind of the built context</param>
+        /// <returns>A converted context</returns>
+        private Context BuildSingleLdContext(IImmutableDictionary<string, Value> attributes, string kindString)
         {
             // targetingKey is in the specification, so it takes precedence.
-            evaluationContext.TryGetValue("key", out var keyAttr);
-            evaluationContext.TryGetValue("targetingKey", out var targetingKey);
+            attributes.TryGetValue("key", out var keyAttr);
+            attributes.TryGetValue("targetingKey", out var targetingKey);
             var finalKey = (targetingKey ?? keyAttr)?.AsString;
 
             if (keyAttr != null && targetingKey != null)
@@ -193,7 +205,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
 
             var contextBuilder = Context.Builder(ContextKind.Of(kindString), finalKey);
-            foreach (var kvp in evaluationContext)
+            foreach (var kvp in attributes)
             {
                 var key = kvp.Key;
                 var value = kvp.Value;
