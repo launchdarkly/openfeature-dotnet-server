@@ -12,7 +12,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
     public class ProviderTests
     {
         private readonly EvalContextConverter _converter =
-            new EvalContextConverter(Components.NoLogging.CreateLoggingConfiguration().LogAdapter.Logger("test"));
+            new EvalContextConverter(Components.NoLogging.Build(null).LogAdapter.Logger("test"));
 
         [Fact]
         public void ItCanProvideMetaData()
@@ -74,7 +74,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.BoolVariationDetail("flag-key",
-                    _converter.ToLdUser(evaluationContext), false))
+                    _converter.ToLdContext(evaluationContext), false))
                 .Returns(new EvaluationDetail<bool>(true, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
@@ -90,7 +90,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.StringVariationDetail("flag-key",
-                    _converter.ToLdUser(evaluationContext), "default"))
+                    _converter.ToLdContext(evaluationContext), "default"))
                 .Returns(new EvaluationDetail<string>("notDefault", 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
@@ -106,7 +106,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.IntVariationDetail("flag-key",
-                    _converter.ToLdUser(evaluationContext), 0))
+                    _converter.ToLdContext(evaluationContext), 0))
                 .Returns(new EvaluationDetail<int>(1, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
@@ -122,7 +122,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.DoubleVariationDetail("flag-key",
-                    _converter.ToLdUser(evaluationContext), 0))
+                    _converter.ToLdContext(evaluationContext), 0))
                 .Returns(new EvaluationDetail<double>(1.7, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
@@ -138,7 +138,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
             var mock = new Mock<ILdClient>();
             mock.Setup(l => l.JsonVariationDetail("flag-key",
-                    It.IsAny<User>(), It.IsAny<LdValue>()))
+                    It.IsAny<Context>(), It.IsAny<LdValue>()))
                 .Returns(new EvaluationDetail<LdValue>(LdValue.Of("true"), 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 

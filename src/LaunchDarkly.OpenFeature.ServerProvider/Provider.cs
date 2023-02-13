@@ -3,6 +3,7 @@ using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
+using LaunchDarkly.Sdk.Server.Subsystems;
 using OpenFeature;
 using OpenFeature.Model;
 
@@ -39,7 +40,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         {
             _client = client;
             var logConfig = (config?.LoggingConfigurationFactory ?? Components.Logging())
-                .CreateLoggingConfiguration();
+                .Build(null);
 
             // If there is a base name for the logger, then use the namespace as the name.
             var log = logConfig.LogAdapter.Logger(logConfig.BaseLoggerName != null
@@ -56,31 +57,31 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <inheritdoc />
         public override Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
-            .BoolVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
+            .BoolVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
         public override Task<ResolutionDetails<string>> ResolveStringValue(string flagKey, string defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
-            .StringVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
+            .StringVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
         public override Task<ResolutionDetails<int>> ResolveIntegerValue(string flagKey, int defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
-            .IntVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
+            .IntVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
         public override Task<ResolutionDetails<double>> ResolveDoubleValue(string flagKey, double defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
-            .DoubleVariationDetail(flagKey, _contextConverter.ToLdUser(context), defaultValue)
+            .DoubleVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
         public override Task<ResolutionDetails<Value>> ResolveStructureValue(string flagKey, Value defaultValue,
             EvaluationContext context = null) => Task.FromResult(_client
-            .JsonVariationDetail(flagKey, _contextConverter.ToLdUser(context), LdValue.Null)
+            .JsonVariationDetail(flagKey, _contextConverter.ToLdContext(context), LdValue.Null)
             .ToValueDetail(defaultValue).ToResolutionDetails(flagKey));
 
         #endregion

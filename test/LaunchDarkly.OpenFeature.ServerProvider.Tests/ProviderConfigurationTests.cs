@@ -25,7 +25,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         {
             var adapter = Logs.ToWriter(Console.Out);
             var config = ProviderConfiguration.Builder().Logging(adapter).Build();
-            var logConfig = config.LoggingConfigurationFactory.CreateLoggingConfiguration();
+            var logConfig = config.LoggingConfigurationFactory.Build(null);
             Assert.Same(adapter, logConfig.LogAdapter);
         }
     }
