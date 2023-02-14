@@ -2,6 +2,12 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.5.0] - 2023-02-14
+This version adds support for contexts. For a detailed explanation of contexts please refer to the [LaunchDarkly.ServerSdk 7.0.0 release notes.](https://github.com/launchdarkly/dotnet-server-sdk/releases/tag/7.0.0) The README contains a number of examples demonstrating how to use contexts.
+
+### Changed:
+- Upgraded to the `LaunchDarkly.ServerSdk` version `7.0.0`.
+
 ## [0.4.0] - 2022-10-28
 ### Changed:
 - Updated to OpenFeature `dotnet-sdk` version `1.0.0`.
