@@ -50,7 +50,7 @@ For information on using the OpenFeature client please refer to the [OpenFeature
 
 ## OpenFeature Specific Considerations
 
-LaunchDarkly evaluates contexts, and it can either evaluate a single-context, or a multi-context. When using OpenFeature both single and multi-contexts must be encoded into a single `EvaluationContext`. This is accomplished by looking an attribute named `kind` in the `EvaluationContext`.
+LaunchDarkly evaluates contexts, and it can either evaluate a single-context, or a multi-context. When using OpenFeature both single and multi-contexts must be encoded into a single `EvaluationContext`. This is accomplished by looking for an attribute named `kind` in the `EvaluationContext`.
 
 There are 4 different scenarios related to the `kind`:
 1. There is no `kind` attribute. In this case the provider will treat the context as a single context containing a "user" kind.
