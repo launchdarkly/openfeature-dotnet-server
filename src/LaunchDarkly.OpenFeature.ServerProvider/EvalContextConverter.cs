@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using OpenFeature.Model;
@@ -6,7 +9,7 @@ using OpenFeature.Model;
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     /// <summary>
-    /// Class which converts <see cref="EvaluationContext"/> objects into <see cref="User"/> objects.
+    /// Class which converts <see cref="EvaluationContext"/> objects into <see cref="Context"/> objects.
     /// </summary>
     internal class EvalContextConverter
     {
@@ -39,7 +42,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, Func<string, IUserBuilder> setter)
+        private void Extract(string key, LdValue value, Func<string, ContextBuilder> setter)
         {
             if (value.IsNull)
             {
@@ -65,7 +68,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// A method to call with the extracted value.
         /// This will only be called if the type was correct.
         /// </param>
-        private void Extract(string key, LdValue value, Func<bool, IUserBuilder> setter)
+        private void Extract(string key, LdValue value, Func<bool, ContextBuilder> setter)
         {
             if (value.IsNull)
             {
@@ -83,12 +86,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <summary>
-        /// Extract a value and add it to a user builder.
+        /// Extract a value and add it to a context builder.
         /// </summary>
-        /// <param name="key">The key to add to the user if the value can be extracted</param>
+        /// <param name="key">The key to add to the context if the value can be extracted</param>
         /// <param name="value">The value to extract</param>
-        /// <param name="builder">The user builder to add the value to</param>
-        private void ProcessValue(string key, Value value, IUserBuilder builder)
+        /// <param name="builder">The context builder to add the value to</param>
+        private void ProcessValue(string key, Value value, ContextBuilder builder)
         {
             var ldValue = value.ToLdValue();
 
@@ -98,50 +101,95 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 case "targetingKey":
                 case "key":
                     break;
-                case "secondary":
-                    Extract(key, ldValue, builder.Secondary);
-                    break;
                 case "name":
                     Extract(key, ldValue, builder.Name);
-                    break;
-                case "firstName":
-                    Extract(key, ldValue, builder.FirstName);
-                    break;
-                case "lastName":
-                    Extract(key, ldValue, builder.LastName);
-                    break;
-                case "email":
-                    Extract(key, ldValue, builder.Email);
-                    break;
-                case "avatar":
-                    Extract(key, ldValue, builder.Avatar);
-                    break;
-                case "ip":
-                    Extract(key, ldValue, builder.IPAddress);
-                    break;
-                case "country":
-                    Extract(key, ldValue, builder.Country);
                     break;
                 case "anonymous":
                     Extract(key, ldValue, builder.Anonymous);
                     break;
+                case "privateAttributes":
+                    builder.Private(ldValue.AsList(LdValue.Convert.String).ToArray());
+                    break;
                 default:
                     // Was not a built-in attribute.
-                    builder.Custom(key, ldValue);
+                    builder.Set(key, ldValue);
                     break;
             }
         }
 
         /// <summary>
-        /// Convert an <see cref="EvaluationContext"/> into a <see cref="User"/>.
+        /// Convert an <see cref="EvaluationContext"/> into a <see cref="Context"/>.
         /// </summary>
         /// <param name="evaluationContext">The evaluation context to convert</param>
-        /// <returns>A converted user</returns>
-        public User ToLdUser(EvaluationContext evaluationContext)
+        /// <returns>A converted context</returns>
+        public Context ToLdContext(EvaluationContext evaluationContext)
         {
-            // targetingKey is the specification, so it takes precedence.
-            evaluationContext.TryGetValue("key", out var keyAttr);
-            evaluationContext.TryGetValue("targetingKey", out var targetingKey);
+            // Use the kind to determine the evaluation context shape.
+            // If there is no kind at all, then we make a single context of "user" kind.
+            evaluationContext.TryGetValue("kind", out var kind);
+
+            var kindString = "user";
+            // A multi-context.
+            if (kind != null && kind.AsString == "multi")
+            {
+                return BuildMultiLdContext(evaluationContext);
+            }
+            // Single context with specified kind.
+            else if (kind != null && kind.IsString)
+            {
+                kindString = kind.AsString;
+            }
+            // The kind was not a string.
+            else if (kind != null && !kind.IsString)
+            {
+                _log.Warn("The EvaluationContext contained an invalid kind and it will be discarded.");
+            }
+            // Else, there is no kind, so we are going to assume a user.
+
+            return BuildSingleLdContext(evaluationContext.AsDictionary(), kindString);
+        }
+
+        /// <summary>
+        /// Convert an evaluation context into a multi-context.
+        /// </summary>
+        /// <param name="evaluationContext">The evaluation context to convert</param>
+        /// <returns>A converted multi-context</returns>
+        private Context BuildMultiLdContext(EvaluationContext evaluationContext)
+        {
+            var multiBuilder = Context.MultiBuilder();
+            foreach (var pair in evaluationContext.AsDictionary())
+            {
+                // Don't need to inspect the "kind" key.
+                if (pair.Key == "kind") continue;
+
+                var kind = pair.Key;
+                var attributes = pair.Value;
+
+                if (!attributes.IsStructure)
+                {
+                    _log.Warn("Top level attributes in a multi-kind context should be Structure types.");
+                    continue;
+                }
+
+                multiBuilder.Add(BuildSingleLdContext(attributes.AsStructure.AsDictionary(), kind));
+            }
+
+
+            return multiBuilder.Build();
+        }
+
+        /// <summary>
+        /// Construct a single context from an immutable dictionary of attributes.
+        /// This can either be the entirety of a single context, or a part of a multi-context.
+        /// </summary>
+        /// <param name="attributes">The attributes to use when building the context</param>
+        /// <param name="kindString">The kind of the built context</param>
+        /// <returns>A converted context</returns>
+        private Context BuildSingleLdContext(IImmutableDictionary<string, Value> attributes, string kindString)
+        {
+            // targetingKey is in the specification, so it takes precedence.
+            attributes.TryGetValue("key", out var keyAttr);
+            attributes.TryGetValue("targetingKey", out var targetingKey);
             var finalKey = (targetingKey ?? keyAttr)?.AsString;
 
             if (keyAttr != null && targetingKey != null)
@@ -156,16 +204,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                            "must be a string.");
             }
 
-            var userBuilder = User.Builder(finalKey);
-            foreach (var kvp in evaluationContext)
+            var contextBuilder = Context.Builder(ContextKind.Of(kindString), finalKey);
+            foreach (var kvp in attributes)
             {
                 var key = kvp.Key;
                 var value = kvp.Value;
 
-                ProcessValue(key, value, userBuilder);
+                ProcessValue(key, value, contextBuilder);
             }
 
-            return userBuilder.Build();
+            return contextBuilder.Build();
         }
     }
 }

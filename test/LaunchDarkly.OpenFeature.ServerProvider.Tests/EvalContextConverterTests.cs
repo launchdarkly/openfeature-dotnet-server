@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
@@ -22,7 +23,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         {
             var evaluationContext = EvaluationContext.Builder()
                 .Set("targetingKey", "the-key")
-                .Set("secondary", "secondary")
                 .Set("name", "name")
                 .Set("firstName", "firstName")
                 .Set("lastName", "lastName")
@@ -32,10 +32,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("country", "country")
                 .Set("anonymous", true).Build();
 
-            var convertedUser = _converter.ToLdUser(evaluationContext);
+            var convertedUser = _converter.ToLdContext(evaluationContext);
 
             var expectedUser = User.Builder("the-key")
-                .Secondary("secondary")
                 .Name("name")
                 .FirstName("firstName")
                 .LastName("lastName")
@@ -46,7 +45,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Anonymous(true)
                 .Build();
 
-            Assert.Equal(expectedUser, convertedUser);
+            Assert.Equal(Context.FromUser(expectedUser), convertedUser);
             // Nothing is wrong with this, so it shouldn't have produced any messages.
             Assert.Empty(_logCapture.GetMessages());
         }
@@ -56,7 +55,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         {
             var evaluationContext = EvaluationContext.Builder()
                 .Set("targetingKey", "the-key")
-                .Set("secondary", (string) null)
                 .Set("name", (string) null)
                 .Set("firstName", (string) null)
                 .Set("lastName", (string) null)
@@ -69,12 +67,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("anonymous", new Value())
                 .Build();
 
-            var convertedUser = _converter.ToLdUser(evaluationContext);
+            var convertedUser = _converter.ToLdContext(evaluationContext);
 
             var expectedUser = User.Builder("the-key")
                 .Build();
 
-            Assert.Equal(expectedUser, convertedUser);
+            Assert.Equal(Context.FromUser(expectedUser), convertedUser);
             // Nothing is wrong with this, so it shouldn't have produced any messages.
             Assert.Empty(_logCapture.GetMessages());
         }
@@ -82,7 +80,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItLogsAndErrorWhenThereIsNoTargetingKey()
         {
-            _converter.ToLdUser(EvaluationContext.Empty);
+            _converter.ToLdContext(EvaluationContext.Empty);
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
                 "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
                 "must be a string."));
@@ -91,21 +89,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItLogsAWarningWhenBothTargetingKeyAndKeyAreDefined()
         {
-            _converter.ToLdUser(EvaluationContext.Builder().Set("targetingKey", "key").Set("key", "key").Build());
+            _converter.ToLdContext(EvaluationContext.Builder().Set("targetingKey", "key").Set("key", "key").Build());
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
                 "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
                 "attribute will be discarded."));
         }
 
         [Theory]
-        [InlineData("secondary", "string")]
         [InlineData("name", "string")]
-        [InlineData("firstName", "string")]
-        [InlineData("lastName", "string")]
-        [InlineData("email", "string")]
-        [InlineData("avatar", "string")]
-        [InlineData("ip", "string")]
-        [InlineData("country", "string")]
         [InlineData("anonymous", "bool")]
         public void ItLogsErrorsWhenTypesAreIncorrectForBuiltInAttributes(string attr, string type)
         {
@@ -114,11 +105,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 //Number isn't valid for any built-in,
                 .Set(attr, 1).Build();
 
-            _converter.ToLdUser(evaluationContext);
+            _converter.ToLdContext(evaluationContext);
 
             Assert.True(_logCapture.HasMessageWithRegex(LogLevel.Error, $".*attribute '{attr}'.*type {type}.*"));
 
-            _converter.ToLdUser(evaluationContext);
+            _converter.ToLdContext(evaluationContext);
         }
 
         [Fact]
@@ -131,10 +122,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set(attributeKey, attributeValue)
                 .Build();
 
-            var ldUser = _converter.ToLdUser(evaluationContext);
+            var ldUser = _converter.ToLdContext(evaluationContext);
             Assert.Equal(
                 attributeValue,
-                ldUser.GetAttribute(UserAttribute.ForName(attributeKey)).AsString
+                ldUser.GetValue(attributeKey).AsString
             );
         }
 
@@ -144,7 +135,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var evaluationContext = EvaluationContext.Builder()
                 .Set("key", "the-key")
                 .Build();
-            Assert.Equal("the-key", _converter.ToLdUser(evaluationContext).Key);
+            Assert.Equal("the-key", _converter.ToLdContext(evaluationContext).Key);
         }
 
         [Fact]
@@ -154,7 +145,61 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("key", "key")
                 .Set("targetingKey", "targeting-key")
                 .Build();
-            Assert.Equal("targeting-key", _converter.ToLdUser(evaluationContext).Key);
+            Assert.Equal("targeting-key", _converter.ToLdContext(evaluationContext).Key);
+        }
+
+        [Fact]
+        public void ItCanBuildASingleContext()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("kind", "organization")
+                .Set("name", "the-org-name")
+                .Set("targetingKey", "my-org-key")
+                .Set("anonymous", true)
+                .Set("myCustomAttribute", "myCustomValue")
+                .Set("privateAttributes", new Value(new List<Value>{new Value("myCustomAttribute")}))
+                .Build();
+
+            var expectedContext = Context.Builder(ContextKind.Of("organization"), "my-org-key")
+                .Name("the-org-name")
+                .Anonymous(true)
+                .Set("myCustomAttribute", "myCustomValue")
+                .Private(new[] {"myCustomAttribute"})
+                .Build();
+
+            Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
+        }
+
+        [Fact]
+        public void ItCanBuildAMultiContext()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("kind", "multi")
+                .Set("organization", new Structure(new Dictionary<string, Value>
+                {
+                    {"targetingKey", new Value("my-org-key")},
+                    {"name", new Value("the-org-name")},
+                    {"myCustomAttribute", new Value("myAttributeValue")},
+                    {"privateAttributes", new Value(new List<Value>{new Value("myCustomAttribute")})}
+                }))
+                .Set("user", new Structure(new Dictionary<string, Value> {
+                    {"targetingKey", new Value("my-user-key")},
+                    {"anonymous", new Value(true)}
+                }))
+                .Build();
+
+            var expectedContext = Context.MultiBuilder()
+                .Add(Context.Builder(ContextKind.Of("organization"), "my-org-key")
+                    .Name("the-org-name")
+                    .Set("myCustomAttribute", "myAttributeValue")
+                    .Private(new []{"myCustomAttribute"})
+                    .Build())
+                .Add(Context.Builder("my-user-key")
+                    .Anonymous(true)
+                    .Build())
+                .Build();
+
+            Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
         }
     }
 }

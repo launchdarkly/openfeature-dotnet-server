@@ -1,6 +1,6 @@
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Server;
-using LaunchDarkly.Sdk.Server.Interfaces;
+using LaunchDarkly.Sdk.Server.Subsystems;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
@@ -26,7 +26,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         // Rider/ReSharper would prefer these not use the private naming convention.
         // ReSharper disable once InconsistentNaming
-        internal ILoggingConfigurationFactory _loggingConfigurationFactory;
+        internal IComponentConfigurer<LoggingConfiguration> _loggingConfigurationFactory;
 
         #endregion
 
@@ -70,7 +70,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <seealso cref="Components.Logging(ILogAdapter) "/>
         /// <seealso cref="Components.NoLogging" />
         /// <seealso cref="Logging(ILogAdapter)"/>
-        public ProviderConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)
+        public ProviderConfigurationBuilder Logging(IComponentConfigurer<LoggingConfiguration> loggingConfigurationFactory)
         {
             _loggingConfigurationFactory = loggingConfigurationFactory;
             return this;

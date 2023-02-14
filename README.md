@@ -50,11 +50,97 @@ For information on using the OpenFeature client please refer to the [OpenFeature
 
 ## OpenFeature Specific Considerations
 
-When evaluating a `User` with the LaunchDarkly Server-Side SDK for .NET a string `key` attribute would normally be required. When using OpenFeature the `targetingKey` attribute should be used instead of `key`. If a `key` attribute is provided in the `EvaluationContext`, then it will be discarded in favor of `targetingKey`. If a `targetingKey` is not provided, or if the `EvaluationContext` is omitted entirely, then the `defaultValue` will be returned from OpenFeature evaluation methods.
+LaunchDarkly evaluates contexts, and it can either evaluate a single-context, or a multi-context. When using OpenFeature both single and multi-contexts must be encoded into a single `EvaluationContext`. This is accomplished by looking for an attribute named `kind` in the `EvaluationContext`.
 
-Other fields normally included in a `User` may be added to the `EvaluationContext`. Any `custom` attributes can be added to the top level of the evaluation context, and they will operate as if they were `custom` attributes on an `User`. Attributes which are typically top level on an `LDUser` should be of the same types that are specified for a `User` or they will not operate as intended.
+There are 4 different scenarios related to the `kind`:
+1. There is no `kind` attribute. In this case the provider will treat the context as a single context containing a "user" kind.
+2. There is a `kind` attribute, and the value of that attribute is "multi". This will indicate to the provider that the context is a multi-context.
+3. There is a `kind` attribute, and the value of that attribute is a string other than "multi". This will indicate to the provider a single context of the kind specified.
+4. There is a `kind` attribute, and the attribute is not a string. In this case the value of the attribute will be discarded, and the context will be treated as a "user". An error message will be logged.
 
-If a top level `custom` attribute is defined on the `EvaluationContext`, then that will be a `custom` attribute inside `custom` for a `User`.
+The `kind` attribute should be a string containing only contain ASCII letters, numbers, `.`, `_` or `-`.
+
+The OpenFeature specification allows for an optional targeting key, but LaunchDarkly requires a key for evaluation. A targeting key must be specified for each context being evaluated. It may be specified using either `targetingKey`, as it is in the OpenFeature specification, or `key`, which is the typical LaunchDarkly identifier for the targeting key. If a `targetingKey` and a `key` are specified, then the `targetingKey` will take precedence.
+
+There are several other attributes which have special functionality within a single or multi-context. 
+- A key of `privateAttributes`. Must be an array of string values. [Equivalent to the 'Private' builder method in the SDK.](https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.ContextBuilder.html#LaunchDarkly_Sdk_ContextBuilder_Private_System_String___)
+- A key of `anonymous`. Must be a boolean value.  [Equivalent to the 'Anonymous' builder method in the SDK.](https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.Context.html#LaunchDarkly_Sdk_Context_Anonymous)
+- A key of `name`. Must be a string. [Equivalent to the 'Name' builder method in the SDK.](https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.ContextBuilder.html#LaunchDarkly_Sdk_ContextBuilder_Name_System_String_)
+
+### Examples
+
+#### A single user context
+
+```csharp
+var evaluationContext = EvaluationContext.Builder()
+  .Set("targetingKey", "my-user-key") // Could also use "key" instead of "targetingKey".
+  .Build();
+```
+
+#### A single context of kind "organization"
+
+```csharp
+var evaluationContext = EvaluationContext.Builder()
+  .Set("kind", "organization")
+  .Set("targetingKey", "my-org-key") // Could also use "key" instead of "targetingKey".
+  .Build();
+```
+
+#### A multi-context containing a "user" and an "organization"
+
+```csharp
+var evaluationContext = EvaluationContext.Builder()
+  .Set("kind", "multi") // Lets the provider know this is a multi-context
+  // Every other top level attribute should be a structure representing
+  // individual contexts of the multi-context.
+  // (non-conforming attributes will be ignored and a warning logged).
+  .Set("organization", new Structure(new Dictionary<string, Value>
+  {
+    {"targetingKey", new Value("my-org-key")},
+    {"name", new Value("the-org-name")},
+    {"myCustomAttribute", new Value("myAttributeValue")}
+  }))
+  .Set("user", new Structure(new Dictionary<string, Value> {
+    {"targetingKey", new Value("my-user-key")},
+  }))
+  .Build();
+```
+
+#### Setting private attributes in a single context
+
+```csharp
+var evaluationContext = EvaluationContext.Builder()
+  .Set("kind", "organization")
+  .Set("name", "the-org-name")
+  .Set("targetingKey", "my-org-key")
+  .Set("anonymous", true)
+  .Set("myCustomAttribute", "myCustomValue")
+  .Set("privateAttributes", new Value(new List<Value>{new Value("myCustomAttribute")}))
+  .Build();
+```
+
+#### Setting private attributes in a multi-context
+
+```csharp
+var evaluationContext = EvaluationContext.Builder()
+  .Set("kind", "multi")
+  .Set("organization", new Structure(new Dictionary<string, Value>
+  {
+    {"targetingKey", new Value("my-org-key")},
+    {"name", new Value("the-org-name")},
+    // This will ONLY apply to the "organization" attributes.
+    {"privateAttributes", new Value(new List<Value>{new Value("myCustomAttribute")})}
+    // This attribute will be private.
+    {"myCustomAttribute", new Value("myAttributeValue")},
+  }))
+  .Set("user", new Structure(new Dictionary<string, Value> {
+    {"targetingKey", new Value("my-user-key")},
+    {"anonymous", new Value(true)},
+    // This attribute will not be private.
+    {"myCustomAttribute", new Value("myAttributeValue")},
+  }))
+  .Build();
+```
 
 ## Learn more
 

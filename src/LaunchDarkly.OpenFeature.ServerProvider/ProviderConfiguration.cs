@@ -1,4 +1,5 @@
 using LaunchDarkly.Sdk.Server.Interfaces;
+using LaunchDarkly.Sdk.Server.Subsystems;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider
 {
@@ -62,7 +63,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// SDK components should not use this property directly; instead, the SDK client will use it to create a
         /// logger instance which will be in <see cref="LdClientContext"/>.
         /// </remarks>
-        public ILoggingConfigurationFactory LoggingConfigurationFactory { get; }
+        public IComponentConfigurer<LoggingConfiguration> LoggingConfigurationFactory { get; }
 
         #region Internal constructor
 
