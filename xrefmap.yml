@@ -157,12 +157,15 @@ references:
   commentId: M:LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Logging.ILogAdapter)
   fullName: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Logging.ILogAdapter)
   nameWithType: ProviderConfigurationBuilder.Logging(ILogAdapter)
-- uid: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Interfaces.ILoggingConfigurationFactory)
-  name: Logging(ILoggingConfigurationFactory)
-  href: api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.html#LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Interfaces_ILoggingConfigurationFactory_
-  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Interfaces.ILoggingConfigurationFactory)
-  fullName: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Interfaces.ILoggingConfigurationFactory)
-  nameWithType: ProviderConfigurationBuilder.Logging(ILoggingConfigurationFactory)
+- uid: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer{LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration})
+  name: Logging(IComponentConfigurer<LoggingConfiguration>)
+  href: api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.html#LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Server_Subsystems_LoggingConfiguration__
+  commentId: M:LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer{LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration})
+  name.vb: Logging(IComponentConfigurer(Of LoggingConfiguration))
+  fullName: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer<LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration>)
+  fullName.vb: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer(Of LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration))
+  nameWithType: ProviderConfigurationBuilder.Logging(IComponentConfigurer<LoggingConfiguration>)
+  nameWithType.vb: ProviderConfigurationBuilder.Logging(IComponentConfigurer(Of LoggingConfiguration))
 - uid: LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging*
   name: Logging
   href: api/LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.html#LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_

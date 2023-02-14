@@ -184,13 +184,13 @@ SDK reference guide</a>.
 .Build();</p>
 
   <a id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging*"></a>
-  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Interfaces_ILoggingConfigurationFactory_" data-uid="LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Interfaces.ILoggingConfigurationFactory)">Logging(ILoggingConfigurationFactory)</h4>
+  <h4 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Server_Subsystems_LoggingConfiguration__" data-uid="LaunchDarkly.OpenFeature.ServerProvider.ProviderConfigurationBuilder.Logging(LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer{LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration})">Logging(IComponentConfigurer&lt;LoggingConfiguration&gt;)</h4>
   <div class="markdown level1 summary"><p>Sets the provider&apos;s logging configuration, using a factory object.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ProviderConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)</code></pre>
+    <pre><code class="lang-csharp hljs">public ProviderConfigurationBuilder Logging(IComponentConfigurer&lt;LoggingConfiguration&gt; loggingConfigurationFactory)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -203,7 +203,7 @@ SDK reference guide</a>.
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">LaunchDarkly.Sdk.Server.Interfaces.ILoggingConfigurationFactory</span></td>
+        <td><span class="xref">LaunchDarkly.Sdk.Server.Subsystems.IComponentConfigurer</span>&lt;<span class="xref">LaunchDarkly.Sdk.Server.Subsystems.LoggingConfiguration</span>&gt;</td>
         <td><span class="parametername">loggingConfigurationFactory</span></td>
         <td><p>the factory object</p>
 </td>
@@ -226,7 +226,7 @@ SDK reference guide</a>.
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Interfaces_ILoggingConfigurationFactory__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Server_Subsystems_LoggingConfiguration___remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 This object is normally a configuration builder obtained from <span class="xref">LaunchDarkly.Sdk.Server.Components.Logging</span>
 which has methods for setting individual logging-related properties. As a shortcut for disabling
@@ -242,12 +242,12 @@ For more about how logging works in the SDK, see the <a href="https://docs.launc
 SDK reference guide</a>.
 </p>
 </div>
-  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Interfaces_ILoggingConfigurationFactory__examples">Examples</h5>
+  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Server_Subsystems_LoggingConfiguration___examples">Examples</h5>
   <p>var config = ProviderConfigurationBuilder.Builder()
 .Logging(Components.Logging().Level(LogLevel.Warn)))
 .Build();</p>
 
-  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Interfaces_ILoggingConfigurationFactory__seealso">See Also</h5>
+  <h5 id="LaunchDarkly_OpenFeature_ServerProvider_ProviderConfigurationBuilder_Logging_LaunchDarkly_Sdk_Server_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Server_Subsystems_LoggingConfiguration___seealso">See Also</h5>
   <div class="seealso">
       <div><span class="xref">LaunchDarkly.Sdk.Server.Components.Logging</span></div>
       <div><span class="xref">LaunchDarkly.Sdk.Server.Components.Logging(LaunchDarkly.Logging.ILogAdapter)</span></div>
