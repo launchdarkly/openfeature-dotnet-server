@@ -5,11 +5,11 @@
              single framework that we are testing; this allows us to test with older SDK
              versions that would error out if they saw any newer target frameworks listed
              here, even if we weren't running those.
-             
+
              Tests need to run against a specific platform implementation. netstandard2.0 is
              an API, and not a platform, so it is not included in this list.
              Additional information: https://xunit.net/docs/why-no-netstandard
-             
+
              -->
         <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net471;net6.0</BuildFrameworks>
         <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
@@ -29,7 +29,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="LaunchDarkly.ServerSdk" Version="7.0.0" />
+        <PackageReference Include="LaunchDarkly.ServerSdk" Version="8.0.0" />
         <PackageReference Include="LaunchDarkly.TestHelpers" Version="2.0.0" />
         <PackageReference Include="Moq" Version="4.8.1" />
         <PackageReference Include="OpenFeature" Version="1.*" />
