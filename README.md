@@ -1,3 +1,5 @@
+[![Build and Test](https://github.com/launchdarkly/openfeature-dotnet-server/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/openfeature-dotnet-server/actions/workflows/ci.yml)
+
 # LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET
 
 This provider allows for using LaunchDarkly with the OpenFeature SDK for .NET.
