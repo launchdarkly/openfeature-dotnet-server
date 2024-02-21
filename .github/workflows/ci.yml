@@ -1,0 +1,22 @@
+name: Run CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [ 'rlamb/github-ci-and-release-please' ]
+    paths-ignore:
+      - '**.md' # Do not need to run CI for markdown changes.
+  pull_request:
+    branches: [ 'rlamb/github-ci-and-release-please' ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  ci-build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ci
