@@ -1,0 +1,19 @@
+name: Release Build
+description: 'Build in Release Configuration'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup dotnet build tools
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0
+
+    - name: Restore Packages
+      shell: bash
+      run: dotnet restore
+
+    - name: Build
+      shell: bash
+      # For a release we do not want to build the test project. The internals are not visible in release and it will fail.
+      run: dotnet build /p:Configuration=Release ./src/LaunchDarkly.OpenFeature.ServerProvider/LaunchDarkly.OpenFeature.ServerProvider.csproj
