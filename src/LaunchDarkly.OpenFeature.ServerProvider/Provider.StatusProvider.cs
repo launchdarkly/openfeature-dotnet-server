@@ -46,9 +46,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 {
                     await _eventChannel.Writer.WriteAsync(payload).ConfigureAwait(false);
                 }
-                catch
+                catch(System.Exception e)
                 {
-                    _logger.Warn("Failed to send provider status event");
+                    _logger.Warn($"Failed to send provider status event: {e.Message}");
                 }
             }
 

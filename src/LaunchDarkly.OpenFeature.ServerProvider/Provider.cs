@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Server;
@@ -28,9 +30,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private readonly ILdClient _client;
         private readonly EvalContextConverter _contextConverter;
         private readonly StatusProvider _statusProvider;
+
         private readonly AtomicBoolean _initializeCalled = new AtomicBoolean(false);
+
         // There is no support for void task completion, so we use bool as a dummy result type.
         private readonly TaskCompletionSource<bool> _initCompletion = new TaskCompletionSource<bool>();
+        private readonly Logger _logger;
 
         private const string ProviderShutdownMessage =
             "the provider has encountered a permanent error or been shutdown";
@@ -38,9 +43,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         internal Provider(ILdClient client)
         {
             _client = client;
-            var logger = _client.GetLogger().SubLogger(NameSpace);
-            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, logger);
-            _contextConverter = new EvalContextConverter(logger);
+            _logger = _client.GetLogger().SubLogger(NameSpace);
+            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger);
+            _contextConverter = new EvalContextConverter(_logger);
         }
 
         /// <summary>
@@ -127,6 +132,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 return _initCompletion.Task;
             }
 
+            _client.FlagTracker.FlagChanged += FlagChangeHandler;
+
             _client.DataSourceStatusProvider.StatusChanged += StatusChangeHandler;
 
             // We start listening for status changes and then we check the current status change. If we do not check
@@ -152,12 +159,35 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         public override Task Shutdown()
         {
             _client.DataSourceStatusProvider.StatusChanged -= StatusChangeHandler;
+            _client.FlagTracker.FlagChanged -= FlagChangeHandler;
             (_client as IDisposable)?.Dispose();
             _statusProvider.SetStatus(ProviderStatus.NotReady);
             return Task.CompletedTask;
         }
 
         #endregion
+
+        private void FlagChangeHandler(object sender, FlagChangeEvent changeEvent)
+        {
+            Task.Run(() => SafeWriteChangeEvent(changeEvent)).ConfigureAwait(false);
+        }
+
+        private async Task SafeWriteChangeEvent(FlagChangeEvent changeEvent)
+        {
+            try
+            {
+                await EventChannel.Writer.WriteAsync(new ProviderEventPayload
+                {
+                    ProviderName = _metadata.Name,
+                    Type = ProviderEventTypes.ProviderConfigurationChanged,
+                    FlagsChanged = new List<string>{changeEvent.Key},
+                }).ConfigureAwait(false);
+            }
+            catch(Exception e)
+            {
+                _logger.Warn($"Encountered an error sending configuration changed events: {e.Message}");
+            }
+        }
 
         private void StatusChangeHandler(object sender, DataSourceStatus status)
         {
