@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using OpenFeature.Constant;
 using OpenFeature.Model;
@@ -34,9 +35,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     payload.Message = message;
                 }
 
-                if (!_eventChannel.Writer.TryWrite(payload))
+                // Trigger the task do run, but don't wait for it. We wrap the exceptions inside SafeWrite,
+                // so we aren't going to have unexpected exceptions here.
+                Task.Run(() => SafeWrite(payload)).ConfigureAwait(false);
+            }
+
+            private async Task SafeWrite(ProviderEventPayload payload)
+            {
+                try
                 {
-                    _logger.Warn("Provider was unable to write to the event channel for a change in provider status.");
+                    await _eventChannel.Writer.WriteAsync(payload).ConfigureAwait(false);
+                }
+                catch
+                {
+                    _logger.Warn("Failed to send provider status event");
                 }
             }
 

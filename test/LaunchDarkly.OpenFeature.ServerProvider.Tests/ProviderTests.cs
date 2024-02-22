@@ -32,7 +32,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
             Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
 
-            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
             var payload = eventContent as ProviderEventPayload;
             Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
         }
@@ -46,7 +46,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
             Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
 
-            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
             var payload = eventContent as ProviderEventPayload;
             Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
         }
@@ -79,7 +79,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             completionTimer.Start();
 
             await provider.Initialize(EvaluationContext.Empty);
-            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
             var payload = eventContent as ProviderEventPayload;
             Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
 
@@ -94,7 +94,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
             Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
 
-            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
             var payload = eventContent as ProviderEventPayload;
             Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
 
@@ -133,7 +133,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 await Record.ExceptionAsync(async () => await provider.Initialize(EvaluationContext.Empty));
             Assert.NotNull(exception);
             Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
-            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
             var payload = eventContent as ProviderEventPayload;
             Assert.Equal(ProviderEventTypes.ProviderError, payload?.Type);
 
