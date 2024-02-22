@@ -6,7 +6,11 @@ This provider allows for using LaunchDarkly with the OpenFeature SDK for .NET.
 
 This provider is designed primarily for use in multi-user systems such as web servers and applications. It follows the server-side LaunchDarkly model for multi-user contexts. It is not intended for use in desktop and embedded systems applications.
 
-This provider is a beta version and should not be considered ready for production use while this message is visible.
+> [!WARNING]
+> This is a beta version. The API is not stabilized and may introduce breaking changes.
+
+> [!NOTE]
+> This OpenFeature provider uses production versions of the LaunchDarkly SDK, which adhere to our standard [versioning policy](https://docs.launchdarkly.com/home/relay-proxy/versioning).
 
 # LaunchDarkly overview
 
@@ -40,8 +44,7 @@ var config = Configuration.Builder("my-sdk-key")
     .StartWaitTime(TimeSpan.FromSeconds(10))
     .Build();
 
-var ldClient  = new LdClient(config);
-var provider = new Provider(ldClient);
+var provider = new Provider(config);
 
 OpenFeature.Api.Instance.SetProvider(provider);
 ```
