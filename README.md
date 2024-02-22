@@ -50,7 +50,7 @@ var provider = new Provider(config);
 // This can be used for use-cases that are not supported by OpenFeature such as migration flags and track events.
 var ldClient = provider.GetClient()
 
-OpenFeature.Api.Instance.SetProvider(provider);
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
 ```
 
 Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side/dotnet) for instructions on getting started with using the SDK.
@@ -155,7 +155,7 @@ var evaluationContext = EvaluationContext.Builder()
 
 #### Asynchronous Initialization
 
-The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialiation will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized.
+The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
 
 ```csharp
 var config = Configuration.Builder("my-sdk-key")
@@ -170,16 +170,16 @@ This provider cannot be re-initialized after being shutdown. This will not impac
 ```csharp
 var ldProvider = new Provider(config);
 
-OpenFeature.Api.Instance.SetProvider(ldProvider);
-OpenFeatute.Api.Instance.SetProvider(new SomeOtherProvider());
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
+await OpenFeatute.Api.Instance.SetProviderAsync(new SomeOtherProvider());
 /// The LaunchDarkly provider will be shutdown and SomeOtherProvider will start handling requests.
 
 // This provider will never finish initializing.
-OpenFeature.Api.Instance.SetProvider(ldProvider);
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider);
 
 // Instead you should create a new provider.
 var ldProvider2 = new Provider(config);
-OpenFeature.Api.Instance.SetProvider(ldProvider2);
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider2);
 
 ```
 
