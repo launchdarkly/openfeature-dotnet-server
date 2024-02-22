@@ -38,6 +38,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public async Task ItHandlesMultipleCallsToInitialize()
+        {
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
+
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+
+            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+        }
+
+        [Fact]
         public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
         {
             var mockClient = new Mock<ILdClient>();
@@ -70,6 +84,22 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
 
             Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+        }
+
+        [Fact]
+        public async Task ItCanBeShutdown()
+        {
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
+
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+
+            Assert.True(provider.GetEventChannel().Reader.TryRead(out var eventContent));
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+
+            await provider.Shutdown();
+            Assert.Equal(ProviderStatus.NotReady, provider.GetStatus());
         }
 
         [Fact]

@@ -29,14 +29,14 @@ This version of the SDK is built for the following targets:
 
 ### Installation
 
-```
+```bash
 dotnet add package LaunchDarkly.ServerSdk
 dotnet add package LaunchDarkly.OpenFeature.ServerProvider
 dotnet add package OpenFeature
 ```
 
 ### Usage
-```
+```csharp
 using LaunchDarkly.OpenFeature.ServerProvider;
 using LaunchDarkly.Sdk.Server;
 
@@ -45,6 +45,10 @@ var config = Configuration.Builder("my-sdk-key")
     .Build();
 
 var provider = new Provider(config);
+
+// If you need access to the LdClient, then you can use GetClient().
+// This can be used for use-cases that are not supported by OpenFeature such as migration flags and track events.
+var ldClient = provider.GetClient()
 
 OpenFeature.Api.Instance.SetProvider(provider);
 ```
@@ -146,6 +150,38 @@ var evaluationContext = EvaluationContext.Builder()
   }))
   .Build();
 ```
+
+### Advanced Usage
+
+#### Asynchronous Initialization
+
+The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialiation will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized.
+
+```csharp
+var config = Configuration.Builder("my-sdk-key")
+    .StartWaitTime(TimeSpan.Zero)
+    .Build();
+```
+
+#### Provider Shutdown
+This provider cannot be re-initialized after being shutdown. This will not impact typical usage, as the LaunchDarkly provider will be set once and used throughout the execution of the application. If you remove the LaunchDarkly Provider, by replacing the default provider or any named providers aliased to the LaunchDarkly provider, then you must create a new provider instance.
+
+```csharp
+var ldProvider = new Provider(config);
+
+OpenFeature.Api.Instance.SetProvider(ldProvider);
+OpenFeatute.Api.Instance.SetProvider(new SomeOtherProvider());
+/// The LaunchDarkly provider will be shutdown and SomeOtherProvider will start handling requests.
+
+// This provider will never finish initializing.
+OpenFeature.Api.Instance.SetProvider(ldProvider);
+
+// Instead you should create a new provider.
+var ldProvider2 = new Provider(config);
+OpenFeature.Api.Instance.SetProvider(ldProvider2);
+
+```
+
 
 ## Learn more
 

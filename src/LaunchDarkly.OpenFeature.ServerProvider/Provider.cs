@@ -153,6 +153,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         {
             _client.DataSourceStatusProvider.StatusChanged -= StatusChangeHandler;
             (_client as IDisposable)?.Dispose();
+            _statusProvider.SetStatus(ProviderStatus.NotReady);
             return Task.CompletedTask;
         }
 
