@@ -164,6 +164,7 @@ var config = Configuration.Builder("my-sdk-key")
 ```
 
 #### Provider Shutdown
+
 This provider cannot be re-initialized after being shutdown. This will not impact typical usage, as the LaunchDarkly provider will be set once and used throughout the execution of the application. If you remove the LaunchDarkly Provider, by replacing the default provider or any named providers aliased to the LaunchDarkly provider, then you must create a new provider instance.
 
 ```csharp
