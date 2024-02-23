@@ -40,8 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LaunchDarkly.ServerSdk" Version="[7.0,9.0)" />
-    <PackageReference Include="OpenFeature" Version="[1.0.0, 2.0.0)" />
+    <PackageReference Include="LaunchDarkly.ServerSdk" Version="[8.0,9.0)" />
+    <PackageReference Include="OpenFeature" Version="[1.4.0, 2.0.0)" />
   </ItemGroup>
 
   <PropertyGroup>

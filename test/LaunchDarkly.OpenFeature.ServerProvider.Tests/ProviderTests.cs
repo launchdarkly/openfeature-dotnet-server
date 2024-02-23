@@ -1,9 +1,11 @@
+using System.Threading.Tasks;
+using System.Timers;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
-using LaunchDarkly.Sdk.Server.Integrations;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
+using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
 
@@ -17,20 +19,133 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanProvideMetaData()
         {
-            var mock = new Mock<ILdClient>();
-            var provider = new Provider(mock.Object);
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
 
             Assert.Equal("LaunchDarkly.OpenFeature.ServerProvider", provider.GetMetadata().Name);
+        }
+
+        [Fact]
+        public async Task ItHandlesValidInitializationWhenClientIsImmediatelyReady()
+        {
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
+
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+        }
+
+        [Fact]
+        public async Task ItHandlesMultipleCallsToInitialize()
+        {
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
+
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+        }
+
+        [Fact]
+        public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var provider = new Provider(mockClient.Object);
+
+            // Setup a timer to indicate that the client has initialized after some amount of time.
+            var completionTimer = new Timer(100);
+            completionTimer.AutoReset = false;
+            completionTimer.Elapsed += (sender, args) =>
+            {
+                mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                    mockDataSourceStatus.Object,
+                    new DataSourceStatus {State = DataSourceState.Valid});
+            };
+            completionTimer.Start();
+
+            await provider.Initialize(EvaluationContext.Empty);
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+        }
+
+        [Fact]
+        public async Task ItCanBeShutdown()
+        {
+            var provider = new Provider(Configuration.Builder("").Offline(true).Build());
+
+            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
+            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+
+            await provider.Shutdown();
+            Assert.Equal(ProviderStatus.NotReady, provider.GetStatus());
+        }
+
+        [Fact]
+        public async Task ItHandlesFailedInitialization()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var provider = new Provider(mockClient.Object);
+
+            // Setup a timer to indicate that the client has initialized after some amount of time.
+            var completionTimer = new Timer(100);
+            completionTimer.AutoReset = false;
+            completionTimer.Elapsed += (sender, args) =>
+            {
+                mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                    mockDataSourceStatus.Object,
+                    new DataSourceStatus {State = DataSourceState.Off});
+            };
+            completionTimer.Start();
+
+            var exception =
+                await Record.ExceptionAsync(async () => await provider.Initialize(EvaluationContext.Empty));
+            Assert.NotNull(exception);
+            Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
+            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
+            var payload = eventContent as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderError, payload?.Type);
+
+            Assert.Equal(ProviderStatus.Error, provider.GetStatus());
         }
 
         [Fact]
         public void ItCanBeConstructedWithLoggingConfiguration()
         {
             var logCapture = new LogCapture();
-            var mock = new Mock<ILdClient>();
-            var provider = new Provider(mock.Object, ProviderConfiguration.Builder().Logging(
-                Components.Logging().Adapter(logCapture)
-            ).Build());
+            var provider = new Provider(Configuration.Builder("").Offline(true)
+                .Logging(Components.Logging().Adapter(logCapture)).Build());
 
             // This context is malformed and will cause a log.
             var evaluationContext = EvaluationContext.Builder()
@@ -41,29 +156,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             provider.ResolveBooleanValue("the-flag", false, evaluationContext);
             Assert.True(logCapture.HasMessageWithText(LogLevel.Warn,
                 "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
-                "attribute will be discarded."));
+                " attribute will be discarded."));
 
-            Assert.Equal("LaunchDarkly.OpenFeature.ServerProvider", logCapture.GetMessages()[0].LoggerName);
-        }
-
-        [Fact]
-        public void ItUsesTheBaseLoggerNameSpecifiedInTheLoggingConfiguration()
-        {
-            var logCapture = new LogCapture();
-            var mock = new Mock<ILdClient>();
-            var provider = new Provider(mock.Object, ProviderConfiguration.Builder().Logging(
-                Components.Logging().Adapter(logCapture).BaseLoggerName("MyStuff.LDStuff")
-            ).Build());
-
-            // This context is malformed and will cause a log.
-            var evaluationContext = EvaluationContext.Builder()
-                .Set("targetingKey", "the-key")
-                .Set("key", "the-key")
-                .Build();
-
-            provider.ResolveBooleanValue("the-flag", false, evaluationContext);
-
-            Assert.Equal("MyStuff.LDStuff.OpenFeature.ServerProvider", logCapture.GetMessages()[0].LoggerName);
+            var exception = Record.Exception(() => logCapture.GetMessages()
+                .Find(message => message.LoggerName == "LaunchDarkly.Sdk.OpenFeature.ServerProvider"));
+            Assert.Null(exception);
         }
 
         [Fact]
@@ -73,6 +170,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("targetingKey", "the-key")
                 .Build();
             var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
             mock.Setup(l => l.BoolVariationDetail("flag-key",
                     _converter.ToLdContext(evaluationContext), false))
                 .Returns(new EvaluationDetail<bool>(true, 10, EvaluationReason.FallthroughReason));
@@ -89,6 +188,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("targetingKey", "the-key")
                 .Build();
             var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
             mock.Setup(l => l.StringVariationDetail("flag-key",
                     _converter.ToLdContext(evaluationContext), "default"))
                 .Returns(new EvaluationDetail<string>("notDefault", 10, EvaluationReason.FallthroughReason));
@@ -105,6 +206,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("targetingKey", "the-key")
                 .Build();
             var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
             mock.Setup(l => l.IntVariationDetail("flag-key",
                     _converter.ToLdContext(evaluationContext), 0))
                 .Returns(new EvaluationDetail<int>(1, 10, EvaluationReason.FallthroughReason));
@@ -121,6 +224,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("targetingKey", "the-key")
                 .Build();
             var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
             mock.Setup(l => l.DoubleVariationDetail("flag-key",
                     _converter.ToLdContext(evaluationContext), 0))
                 .Returns(new EvaluationDetail<double>(1.7, 10, EvaluationReason.FallthroughReason));
@@ -137,6 +242,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("targetingKey", "the-key")
                 .Build();
             var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
             mock.Setup(l => l.JsonVariationDetail("flag-key",
                     It.IsAny<Context>(), It.IsAny<LdValue>()))
                 .Returns(new EvaluationDetail<LdValue>(LdValue.Of("true"), 10, EvaluationReason.FallthroughReason));

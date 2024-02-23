@@ -6,7 +6,11 @@ This provider allows for using LaunchDarkly with the OpenFeature SDK for .NET.
 
 This provider is designed primarily for use in multi-user systems such as web servers and applications. It follows the server-side LaunchDarkly model for multi-user contexts. It is not intended for use in desktop and embedded systems applications.
 
-This provider is a beta version and should not be considered ready for production use while this message is visible.
+> [!WARNING]
+> This is a beta version. The API is not stabilized and may introduce breaking changes.
+
+> [!NOTE]
+> This OpenFeature provider uses production versions of the LaunchDarkly SDK, which adhere to our standard [versioning policy](https://docs.launchdarkly.com/home/relay-proxy/versioning).
 
 # LaunchDarkly overview
 
@@ -25,14 +29,14 @@ This version of the SDK is built for the following targets:
 
 ### Installation
 
-```
+```bash
 dotnet add package LaunchDarkly.ServerSdk
 dotnet add package LaunchDarkly.OpenFeature.ServerProvider
 dotnet add package OpenFeature
 ```
 
 ### Usage
-```
+```csharp
 using LaunchDarkly.OpenFeature.ServerProvider;
 using LaunchDarkly.Sdk.Server;
 
@@ -40,10 +44,13 @@ var config = Configuration.Builder("my-sdk-key")
     .StartWaitTime(TimeSpan.FromSeconds(10))
     .Build();
 
-var ldClient  = new LdClient(config);
-var provider = new Provider(ldClient);
+var provider = new Provider(config);
 
-OpenFeature.Api.Instance.SetProvider(provider);
+// If you need access to the LdClient, then you can use GetClient().
+// This can be used for use-cases that are not supported by OpenFeature such as migration flags and track events.
+var ldClient = provider.GetClient()
+
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
 ```
 
 Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side/dotnet) for instructions on getting started with using the SDK.
@@ -143,6 +150,39 @@ var evaluationContext = EvaluationContext.Builder()
   }))
   .Build();
 ```
+
+### Advanced Usage
+
+#### Asynchronous Initialization
+
+The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
+
+```csharp
+var config = Configuration.Builder("my-sdk-key")
+    .StartWaitTime(TimeSpan.Zero)
+    .Build();
+```
+
+#### Provider Shutdown
+
+This provider cannot be re-initialized after being shutdown. This will not impact typical usage, as the LaunchDarkly provider will be set once and used throughout the execution of the application. If you remove the LaunchDarkly Provider, by replacing the default provider or any named providers aliased to the LaunchDarkly provider, then you must create a new provider instance.
+
+```csharp
+var ldProvider = new Provider(config);
+
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
+await OpenFeatute.Api.Instance.SetProviderAsync(new SomeOtherProvider());
+/// The LaunchDarkly provider will be shutdown and SomeOtherProvider will start handling requests.
+
+// This provider will never finish initializing.
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider);
+
+// Instead you should create a new provider.
+var ldProvider2 = new Provider(config);
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider2);
+
+```
+
 
 ## Learn more
 

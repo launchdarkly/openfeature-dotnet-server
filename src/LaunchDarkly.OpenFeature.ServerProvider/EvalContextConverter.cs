@@ -195,13 +195,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             if (keyAttr != null && targetingKey != null)
             {
                 _log.Warn("The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
-                          "attribute will be discarded.");
+                          " attribute will be discarded.");
             }
 
             if (finalKey == null)
             {
                 _log.Error("The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
-                           "must be a string.");
+                           " must be a string.");
             }
 
             var contextBuilder = Context.Builder(ContextKind.Of(kindString), finalKey);

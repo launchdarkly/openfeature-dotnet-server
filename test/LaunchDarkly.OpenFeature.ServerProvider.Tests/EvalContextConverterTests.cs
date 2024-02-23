@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
-using LaunchDarkly.Sdk.Server;
 using OpenFeature.Model;
 using Xunit;
 
@@ -9,7 +8,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
     public class EvalContextConverterTests
     {
-        private LogCapture _logCapture;
+        private readonly LogCapture _logCapture;
         private readonly EvalContextConverter _converter;
 
         public EvalContextConverterTests()
@@ -83,7 +82,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             _converter.ToLdContext(EvaluationContext.Empty);
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
                 "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
-                "must be a string."));
+                " must be a string."));
         }
 
         [Fact]
@@ -92,7 +91,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             _converter.ToLdContext(EvaluationContext.Builder().Set("targetingKey", "key").Set("key", "key").Build());
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
                 "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
-                "attribute will be discarded."));
+                " attribute will be discarded."));
         }
 
         [Theory]
