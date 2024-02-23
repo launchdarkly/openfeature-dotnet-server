@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using LaunchDarkly.Logging;
@@ -8,6 +11,8 @@ using Moq;
 using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
+using LaunchDarkly.Sdk.Server.Integrations;
+using Xunit.Abstractions;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 {
@@ -15,6 +20,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
     {
         private readonly EvalContextConverter _converter =
             new EvalContextConverter(Components.NoLogging.Build(null).LogAdapter.Logger("test"));
+
+        private ITestOutputHelper _outHelper;
+
+        public ProviderTests(ITestOutputHelper outHelper)
+        {
+            _outHelper = outHelper;
+        }
 
         [Fact]
         public void ItCanProvideMetaData()
@@ -64,6 +76,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 State = DataSourceState.Initializing
             });
             mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
 
             var provider = new Provider(mockClient.Object);
 
@@ -115,6 +130,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 State = DataSourceState.Initializing
             });
             mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
 
             var provider = new Provider(mockClient.Object);
 
@@ -251,6 +269,40 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 
             var res = provider.ResolveStructureValue("flag-key", new Value("false"), evaluationContext).Result;
             Assert.Equal("true", res.Value.AsString);
+        }
+
+        [Fact]
+        public async Task ItEmitsConfigurationChangedEvents()
+        {
+            var testData = TestData.DataSource();
+            var config = Configuration.Builder("")
+                .DataSource(testData)
+                .Events(Components.NoEvents)
+                .Build();
+
+            var provider = new Provider(config);
+            await provider.Initialize(EvaluationContext.Empty);
+
+            testData.Update(testData.Flag("test-flag-a").BooleanFlag().On(true));
+            testData.Update(testData.Flag("test-flag-b").BooleanFlag().On(true));
+
+            // Get the ready event.
+            await provider.GetEventChannel().Reader.ReadAsync();
+
+            // The ordering of the subsequent events is not going to be deterministic.
+            var eventA = await provider.GetEventChannel().Reader.ReadAsync();
+            var eventPayloadA = eventA as ProviderEventPayload;
+            _outHelper.WriteLine($"Payload A change {eventPayloadA?.FlagsChanged[0]}");
+            Assert.True("test-flag-a" == eventPayloadA?.FlagsChanged[0] || "test-flag-b" == eventPayloadA?.FlagsChanged[0]);
+
+            Assert.Single(eventPayloadA?.FlagsChanged ?? new List<string>());
+
+            var eventB = await provider.GetEventChannel().Reader.ReadAsync();
+            var eventPayloadB = eventB as ProviderEventPayload;
+            _outHelper.WriteLine($"Payload B change {eventPayloadB?.FlagsChanged[0]}");
+            Assert.True("test-flag-a" == eventPayloadB?.FlagsChanged[0] || "test-flag-b" == eventPayloadB?.FlagsChanged[0]);
+            Assert.Single(eventPayloadB?.FlagsChanged ?? new List<string>());
+            Assert.NotEqual(eventPayloadA?.FlagsChanged[0], eventPayloadB?.FlagsChanged[0]);
         }
     }
 }
