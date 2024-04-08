@@ -32,7 +32,7 @@
         <PackageReference Include="LaunchDarkly.ServerSdk" Version="8.1.0" />
         <PackageReference Include="LaunchDarkly.TestHelpers" Version="2.0.0" />
         <PackageReference Include="Moq" Version="4.8.1" />
-        <PackageReference Include="OpenFeature" Version="1.*" />
+        <PackageReference Include="OpenFeature" Version="1.5" />
     </ItemGroup>
 
     <ItemGroup>
