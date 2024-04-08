@@ -52,7 +52,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given configuration.
         /// </summary>
         /// <param name="config">A client configuration object</param>
-        public Provider(Configuration config) : this(new LdClient(config))
+        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)))
         {
         }
 
@@ -60,7 +60,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given SDK key.
         /// </summary>
         /// <param name="sdkKey">The SDK key</param>
-        public Provider(string sdkKey) : this(new LdClient(sdkKey))
+        public Provider(string sdkKey) : this(new LdClient(WrapConfig(Configuration.Builder(sdkKey).Build())))
         {
         }
 
@@ -81,6 +81,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         public ILdClient GetClient()
         {
             return _client;
+        }
+
+        private static Configuration WrapConfig(Configuration config)
+        {
+            return Configuration.Builder(config)
+                .WrapperInfo(Components.WrapperInfo().Name("open-feature-dotnet-server")
+                    .Version(typeof(Provider).Assembly.GetName().Version.ToString()))
+                .Build();
         }
 
         #region FeatureProvider Implementation
@@ -180,10 +188,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 {
                     ProviderName = _metadata.Name,
                     Type = ProviderEventTypes.ProviderConfigurationChanged,
-                    FlagsChanged = new List<string>{changeEvent.Key},
+                    FlagsChanged = new List<string> {changeEvent.Key},
                 }).ConfigureAwait(false);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.Warn($"Encountered an error sending configuration changed events: {e.Message}");
             }
