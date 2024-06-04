@@ -71,6 +71,8 @@ The `kind` attribute should be a string containing only contain ASCII letters, n
 
 The OpenFeature specification allows for an optional targeting key, but LaunchDarkly requires a key for evaluation. A targeting key must be specified for each context being evaluated. It may be specified using either `targetingKey`, as it is in the OpenFeature specification, or `key`, which is the typical LaunchDarkly identifier for the targeting key. If a `targetingKey` and a `key` are specified, then the `targetingKey` will take precedence.
 
+The targeting key may also be specified using `SetTargetingKey`. Currently, if `SetTargetingKey` is used, and a `targetingKey` attribute exists, then the attribute will be used instead.
+
 There are several other attributes which have special functionality within a single or multi-context. 
 - A key of `privateAttributes`. Must be an array of string values. [Equivalent to the 'Private' builder method in the SDK.](https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.ContextBuilder.html#LaunchDarkly_Sdk_ContextBuilder_Private_System_String___)
 - A key of `anonymous`. Must be a boolean value.  [Equivalent to the 'Anonymous' builder method in the SDK.](https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.Context.html#LaunchDarkly_Sdk_Context_Anonymous)
