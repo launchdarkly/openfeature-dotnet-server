@@ -146,7 +146,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
             // Else, there is no kind, so we are going to assume a user.
 
-            return BuildSingleLdContext(evaluationContext.AsDictionary(), kindString);
+            var targetingKey = evaluationContext.TargetingKey;
+            var asDictionary = evaluationContext.AsDictionary();
+            if (!string.IsNullOrEmpty(targetingKey) && !asDictionary.ContainsKey("targetingKey"))
+            {
+                asDictionary = asDictionary.Add("targetingKey", new Value(targetingKey));
+            }
+
+            return BuildSingleLdContext(asDictionary, kindString);
         }
 
         /// <summary>
