@@ -2,6 +2,13 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.8.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/0.7.0...0.8.0) (2024-06-04)
+
+
+### Features
+
+* Add support for the TargetingKey field and setter. ([#32](https://github.com/launchdarkly/openfeature-dotnet-server/issues/32)) ([c9e6a83](https://github.com/launchdarkly/openfeature-dotnet-server/commit/c9e6a8373e87ce15bca9638bca3d674d355b6be6))
+
 ## [0.7.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/0.6.0...0.7.0) (2024-04-08)
 
 
