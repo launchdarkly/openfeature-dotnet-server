@@ -144,7 +144,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
             _client.DataSourceStatusProvider.StatusChanged += StatusChangeHandler;
 
-            // We start listening for status changes and then we check the current status change. If we do not check
+            // We start listening for status changes, and then we check the current status change. If we do not check
             // then we could have missed a status change. If we check before registering a listener, then we could
             // miss a change between checking and listening. Doing it this way we can get duplicates, but we filter
             // when the status does not actually change, so we won't emit duplicate events.
