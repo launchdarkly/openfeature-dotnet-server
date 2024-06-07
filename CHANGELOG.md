@@ -2,6 +2,17 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/0.8.0...1.0.0) (2024-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* 1.0.0 release. ([#35](https://github.com/launchdarkly/openfeature-dotnet-server/issues/35))
+
+### Features
+
+* 1.0.0 release. ([#35](https://github.com/launchdarkly/openfeature-dotnet-server/issues/35)) ([0440673](https://github.com/launchdarkly/openfeature-dotnet-server/commit/0440673e5640a863832918d2441fb5ad6de3c727))
+
 ## [0.8.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/0.7.0...0.8.0) (2024-06-04)
 
 
