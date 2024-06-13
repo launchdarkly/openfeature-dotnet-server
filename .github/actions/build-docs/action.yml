@@ -19,7 +19,5 @@ runs:
     - name: Build docs
       shell: bash
       run: |
-        pushd ${{ inputs.workspace_path }}
         docfx metadata
         docfx build
-        popd
