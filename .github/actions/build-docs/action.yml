@@ -1,0 +1,25 @@
+name: Build Documentation
+description: 'Build Documentation.'
+inputs:
+  workspace_path:
+    description: 'Path to the workspace.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup dotnet build tools
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 6.0
+    - name: Install docfx
+      shell: bash
+      run:  dotnet tool update -g docfx
+
+    - name: Build docs
+      shell: bash
+      run: |
+        pushd ${{ inputs.workspace_path }}
+        docfx metadata
+        docfx build
+        popd

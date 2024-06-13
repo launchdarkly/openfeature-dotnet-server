@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      contents: write # Needed to publish documentation.
     steps:
       - uses: actions/checkout@v4
 
@@ -49,3 +49,4 @@ jobs:
         uses: ./.github/actions/publish
         with:
           dry_run: ${{ inputs.dry_run }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
