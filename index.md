@@ -12,3 +12,7 @@ The [README](https://github.com/launchdarkly/openfeature-dotnet-server/tree/main
 For source code, see the [GitHub repository](https://github.com/launchdarkly/openfeature-dotnet-server).
 The [developer notes](https://github.com/launchdarkly/openfeature-dotnet-server/blob/main/CONTRIBUTING.md) there include links
 to other repositories used in the SDK.
+
+# Namespaces
+
+<xref:LaunchDarkly.OpenFeature.ServerProvider>: Contains the provider implementation and supporting implementation.
