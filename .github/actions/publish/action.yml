@@ -3,7 +3,9 @@ description: 'Dotnet Client SDK action that packs DLLs into unsigned Nuget packa
 inputs:
   dry_run:
     description: 'Is this a dry run. If so no package will be published.'
-    type: boolean
+    required: true
+  github_token:
+    description: 'Required to publish github pages'
     required: true
 
 runs:
@@ -13,6 +15,10 @@ runs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 7.0
+
+    - name: Build Documentation
+      if: steps.build.outcome == 'success'
+      uses: ./.github/actions/build-docs
 
     - name: Create Nuget Package
       shell: bash
@@ -37,3 +43,10 @@ runs:
         for pkg in $(find ./nupkgs -name '*.nupkg' -o -name '*.snupkg'); do
           echo "dry run - ${pkg}"
         done
+
+    - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.1
+      if: ${{ inputs.dry_run == 'false' }}
+      name: 'Publish to Github pages'
+      with:
+        docs_path: docs
+        github_token: ${{ inputs.github_token }}

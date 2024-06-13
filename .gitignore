@@ -182,3 +182,7 @@ project.lock.json
 # JetBrains IDEs
 .idea/
 
+# Generated documentaion
+docs/
+api/
+

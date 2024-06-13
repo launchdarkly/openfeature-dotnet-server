@@ -1,0 +1,23 @@
+on:
+  workflow_dispatch:
+
+name: Manual Publish Docs
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed in this case to write github pages.
+    steps:
+      - uses: actions/checkout@v4
+      - id: build
+        name: Build and Test SDK
+        uses: ./.github/actions/ci
+        with:
+          project_file: ${{ inputs.project_file }}
+          test_project_file: ${{ inputs.test_project_file }}
+
+      - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.1
+        name: 'Publish to Github pages'
+        with:
+          docs_path: docs
+          github_token: ${{ secrets.GITHUB_TOKEN }}
