@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
@@ -97,43 +98,37 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         public override Metadata GetMetadata() => _metadata;
 
         /// <inheritdoc />
-        public override Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue,
-            EvaluationContext context = null) => Task.FromResult(_client
+        public override Task<ResolutionDetails<bool>> ResolveBooleanValueAsync(string flagKey, bool defaultValue,
+            EvaluationContext context = null, CancellationToken cancellationToken = default) => Task.FromResult(_client
             .BoolVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
-        public override Task<ResolutionDetails<string>> ResolveStringValue(string flagKey, string defaultValue,
-            EvaluationContext context = null) => Task.FromResult(_client
+        public override Task<ResolutionDetails<string>> ResolveStringValueAsync(string flagKey, string defaultValue,
+            EvaluationContext context = null, CancellationToken cancellationToken = default) => Task.FromResult(_client
             .StringVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
-        public override Task<ResolutionDetails<int>> ResolveIntegerValue(string flagKey, int defaultValue,
-            EvaluationContext context = null) => Task.FromResult(_client
+        public override Task<ResolutionDetails<int>> ResolveIntegerValueAsync(string flagKey, int defaultValue,
+            EvaluationContext context = null, CancellationToken cancellationToken = default) => Task.FromResult(_client
             .IntVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
-        public override Task<ResolutionDetails<double>> ResolveDoubleValue(string flagKey, double defaultValue,
-            EvaluationContext context = null) => Task.FromResult(_client
+        public override Task<ResolutionDetails<double>> ResolveDoubleValueAsync(string flagKey, double defaultValue,
+            EvaluationContext context = null, CancellationToken cancellationToken = default) => Task.FromResult(_client
             .DoubleVariationDetail(flagKey, _contextConverter.ToLdContext(context), defaultValue)
             .ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
-        public override Task<ResolutionDetails<Value>> ResolveStructureValue(string flagKey, Value defaultValue,
-            EvaluationContext context = null) => Task.FromResult(_client
+        public override Task<ResolutionDetails<Value>> ResolveStructureValueAsync(string flagKey, Value defaultValue,
+            EvaluationContext context = null, CancellationToken cancellationToken = default) => Task.FromResult(_client
             .JsonVariationDetail(flagKey, _contextConverter.ToLdContext(context), LdValue.Null)
             .ToValueDetail(defaultValue).ToResolutionDetails(flagKey));
 
         /// <inheritdoc />
-        public override ProviderStatus GetStatus()
-        {
-            return _statusProvider.Status;
-        }
-
-        /// <inheritdoc />
-        public override Task Initialize(EvaluationContext context)
+        public override Task InitializeAsync(EvaluationContext context, CancellationToken cancellationToken = default)
         {
             if (_initializeCalled.GetAndSet(true))
             {
@@ -164,7 +159,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <inheritdoc />
-        public override Task Shutdown()
+        public override Task ShutdownAsync(CancellationToken cancellationToken = default)
         {
             _client.DataSourceStatusProvider.StatusChanged -= StatusChangeHandler;
             _client.FlagTracker.FlagChanged -= FlagChangeHandler;
@@ -208,12 +203,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     _initCompletion.TrySetResult(true);
                     break;
                 case DataSourceState.Interrupted:
-                    _statusProvider.SetStatus(ProviderStatus.Error,
+                    // The "ProviderStatus.Error" state says it is unable to evaluate flags. We can always evaluate
+                    // flags.
+                    _statusProvider.SetStatus(ProviderStatus.Stale,
                         status.LastError?.Message ?? "encountered an unknown error");
                     break;
                 case DataSourceState.Off:
                 default:
-                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
+                    // If we had initialized every, then we could still initialize flags, but I think we need to let
+                    // a consumer know we have encountered an unrecoverable problem with the connection.
+                    _statusProvider.SetStatus(ProviderStatus.Fatal, ProviderShutdownMessage);
                     _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
                     break;
             }

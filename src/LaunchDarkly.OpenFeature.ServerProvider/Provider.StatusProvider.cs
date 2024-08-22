@@ -11,6 +11,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private class StatusProvider
         {
             private ProviderStatus _providerStatus = ProviderStatus.NotReady;
+            private bool _firstEvent = true;
             private object _statusLock = new object();
             private Channel<object> _eventChannel;
             private string _providerName;
@@ -62,6 +63,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     }
 
                     _providerStatus = status;
+                    // The OpenFeature client will emit a ready or error event when initialization completes.
+                    // We want to avoid duplicating that event.
+                    if (_firstEvent)
+                    {
+                        _firstEvent = false;
+                        return;
+                    }
                     switch (status)
                     {
                         case ProviderStatus.NotReady:
@@ -73,20 +81,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                             EmitProviderEvent(ProviderEventTypes.ProviderStale, message);
                             break;
                         case ProviderStatus.Error:
+                        case ProviderStatus.Fatal:
                         default:
                             EmitProviderEvent(ProviderEventTypes.ProviderError, message);
                             break;
-                    }
-                }
-            }
-
-            public ProviderStatus Status
-            {
-                get
-                {
-                    lock (_statusLock)
-                    {
-                        return _providerStatus;
                     }
                 }
             }
