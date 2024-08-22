@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using LaunchDarkly.Logging;
@@ -8,7 +6,6 @@ using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
-using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
 using LaunchDarkly.Sdk.Server.Integrations;
