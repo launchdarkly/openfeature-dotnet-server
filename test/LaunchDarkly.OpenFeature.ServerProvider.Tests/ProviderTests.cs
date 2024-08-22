@@ -25,7 +25,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             _outHelper = outHelper;
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanProvideMetaData()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -33,7 +33,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal("LaunchDarkly.OpenFeature.ServerProvider", provider.GetMetadata().Name);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsImmediatelyReady()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -41,7 +41,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesMultipleCallsToInitialize()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -50,7 +50,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
         {
             var mockClient = new Mock<ILdClient>();
@@ -83,7 +83,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.InitializeAsync(EvaluationContext.Empty);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItCanBeShutdown()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -93,7 +93,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             await provider.ShutdownAsync();
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesFailedInitialization()
         {
             var mockClient = new Mock<ILdClient>();
@@ -129,7 +129,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanBeConstructedWithLoggingConfiguration()
         {
             var logCapture = new LogCapture();
@@ -152,7 +152,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Null(exception);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoABooleanEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -170,7 +170,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.True(res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAStringEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -188,7 +188,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal("notDefault", res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAnIntegerEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -206,7 +206,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(1, res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoADoubleEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -224,7 +224,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(1.7, res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAValueEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -242,7 +242,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal("true", res.Value.AsString);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItEmitsConfigurationChangedEvents()
         {
             var testData = TestData.DataSource();

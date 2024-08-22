@@ -22,7 +22,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             _outHelper = outHelper;
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsImmediatelyReady()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -35,7 +35,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(1, readyCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
         {
             var mockClient = new Mock<ILdClient>();
@@ -74,7 +74,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(1, readyCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesFailedInitialization()
         {
             var mockClient = new Mock<ILdClient>();
