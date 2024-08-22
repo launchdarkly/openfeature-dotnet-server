@@ -30,7 +30,7 @@ runs:
     - name: Run Tests
       if: steps.build.outcome == 'success' && inputs.run_tests == 'true'
       shell: bash
-      run: dotnet test --blame-hang-timeout 10s
+      run: dotnet test
 
     - name: Build Documentation
       if: steps.build.outcome == 'success'
