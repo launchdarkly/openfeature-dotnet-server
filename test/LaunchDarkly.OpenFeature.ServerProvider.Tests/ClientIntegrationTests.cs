@@ -62,6 +62,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 mockDataSourceStatus.Raise(e => e.StatusChanged += null,
                     mockDataSourceStatus.Object,
                     new DataSourceStatus { State = DataSourceState.Valid });
+
+                mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+                {
+                    State = DataSourceState.Valid
+                });
             };
             completionTimer.Start();
 
