@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using LaunchDarkly.Logging;
@@ -8,7 +6,6 @@ using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
-using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
 using LaunchDarkly.Sdk.Server.Integrations;
@@ -28,7 +25,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             _outHelper = outHelper;
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanProvideMetaData()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
@@ -36,34 +33,24 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal("LaunchDarkly.OpenFeature.ServerProvider", provider.GetMetadata().Name);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsImmediatelyReady()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
 
-            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
-            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
-
-            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
-            var payload = eventContent as ProviderEventPayload;
-            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+            await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesMultipleCallsToInitialize()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
 
-            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
-            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
-            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
-
-            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
-            var payload = eventContent as ProviderEventPayload;
-            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
+            await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
+            await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
         {
             var mockClient = new Mock<ILdClient>();
@@ -93,31 +80,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             };
             completionTimer.Start();
 
-            await provider.Initialize(EvaluationContext.Empty);
-            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
-            var payload = eventContent as ProviderEventPayload;
-            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
-
-            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+            await provider.InitializeAsync(EvaluationContext.Empty);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItCanBeShutdown()
         {
             var provider = new Provider(Configuration.Builder("").Offline(true).Build());
 
-            await provider.Initialize(EvaluationContext.Builder().Set("key", "test").Build());
-            Assert.Equal(ProviderStatus.Ready, provider.GetStatus());
+            await provider.InitializeAsync(EvaluationContext.Builder().Set("key", "test").Build());
 
-            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
-            var payload = eventContent as ProviderEventPayload;
-            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
-
-            await provider.Shutdown();
-            Assert.Equal(ProviderStatus.NotReady, provider.GetStatus());
+            await provider.ShutdownAsync();
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItHandlesFailedInitialization()
         {
             var mockClient = new Mock<ILdClient>();
@@ -148,17 +124,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             completionTimer.Start();
 
             var exception =
-                await Record.ExceptionAsync(async () => await provider.Initialize(EvaluationContext.Empty));
+                await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
             Assert.NotNull(exception);
             Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
-            var eventContent = await provider.GetEventChannel().Reader.ReadAsync();
-            var payload = eventContent as ProviderEventPayload;
-            Assert.Equal(ProviderEventTypes.ProviderError, payload?.Type);
-
-            Assert.Equal(ProviderStatus.Error, provider.GetStatus());
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanBeConstructedWithLoggingConfiguration()
         {
             var logCapture = new LogCapture();
@@ -171,7 +142,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Set("key", "the-key")
                 .Build();
 
-            provider.ResolveBooleanValue("the-flag", false, evaluationContext);
+            provider.ResolveBooleanValueAsync("the-flag", false, evaluationContext);
             Assert.True(logCapture.HasMessageWithText(LogLevel.Warn,
                 "The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
                 " attribute will be discarded."));
@@ -181,7 +152,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Null(exception);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoABooleanEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -195,11 +166,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Returns(new EvaluationDetail<bool>(true, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
-            var res = provider.ResolveBooleanValue("flag-key", false, evaluationContext).Result;
+            var res = provider.ResolveBooleanValueAsync("flag-key", false, evaluationContext).Result;
             Assert.True(res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAStringEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -213,11 +184,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Returns(new EvaluationDetail<string>("notDefault", 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
-            var res = provider.ResolveStringValue("flag-key", "default", evaluationContext).Result;
+            var res = provider.ResolveStringValueAsync("flag-key", "default", evaluationContext).Result;
             Assert.Equal("notDefault", res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAnIntegerEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -231,11 +202,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Returns(new EvaluationDetail<int>(1, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
-            var res = provider.ResolveIntegerValue("flag-key", 0, evaluationContext).Result;
+            var res = provider.ResolveIntegerValueAsync("flag-key", 0, evaluationContext).Result;
             Assert.Equal(1, res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoADoubleEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -249,11 +220,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Returns(new EvaluationDetail<double>(1.7, 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
-            var res = provider.ResolveDoubleValue("flag-key", 0, evaluationContext).Result;
+            var res = provider.ResolveDoubleValueAsync("flag-key", 0, evaluationContext).Result;
             Assert.Equal(1.7, res.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public void ItCanDoAValueEvaluation()
         {
             var evaluationContext = EvaluationContext.Builder()
@@ -267,11 +238,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Returns(new EvaluationDetail<LdValue>(LdValue.Of("true"), 10, EvaluationReason.FallthroughReason));
             var provider = new Provider(mock.Object);
 
-            var res = provider.ResolveStructureValue("flag-key", new Value("false"), evaluationContext).Result;
+            var res = provider.ResolveStructureValueAsync("flag-key", new Value("false"), evaluationContext).Result;
             Assert.Equal("true", res.Value.AsString);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ItEmitsConfigurationChangedEvents()
         {
             var testData = TestData.DataSource();
@@ -281,13 +252,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 .Build();
 
             var provider = new Provider(config);
-            await provider.Initialize(EvaluationContext.Empty);
+            await provider.InitializeAsync(EvaluationContext.Empty);
 
             testData.Update(testData.Flag("test-flag-a").BooleanFlag().On(true));
             testData.Update(testData.Flag("test-flag-b").BooleanFlag().On(true));
-
-            // Get the ready event.
-            await provider.GetEventChannel().Reader.ReadAsync();
 
             // The ordering of the subsequent events is not going to be deterministic.
             var eventA = await provider.GetEventChannel().Reader.ReadAsync();
