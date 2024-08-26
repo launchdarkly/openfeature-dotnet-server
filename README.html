@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET | LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET | LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET ">
+    
+    
+      <link rel="shortcut icon" href="favicon.ico">
+      <link rel="stylesheet" href="styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="styles/docfx.css">
+      <link rel="stylesheet" href="styles/main.css">
+      <meta property="docfx:navrel" content="">
+      <meta property="docfx:tocrel" content="">
+    
+    <meta property="docfx:rel" content="">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="logo.svg" alt="LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first="First" data-prev="Previous" data-next="Next" data-last="Last"></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+
+<p><a href="https://github.com/launchdarkly/openfeature-dotnet-server/actions/workflows/ci.yml"><img src="https://github.com/launchdarkly/openfeature-dotnet-server/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a></p>
+<h1 id="launchdarkly-openfeature-provider-for-the-server-side-sdk-for-net">LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET</h1>
+<p>This provider allows for using LaunchDarkly with the OpenFeature SDK for .NET.</p>
+<p>This provider is designed primarily for use in multi-user systems such as web servers and applications. It follows the server-side LaunchDarkly model for multi-user contexts. It is not intended for use in desktop and embedded systems applications.</p>
+<h1 id="launchdarkly-overview">LaunchDarkly overview</h1>
+<p><a href="https://www.launchdarkly.com">LaunchDarkly</a> is a feature management platform that serves trillions of feature flags daily to help teams build better software, faster. <a href="https://docs.launchdarkly.com/home/getting-started">Get started</a> using LaunchDarkly today!</p>
+<p><a href="https://twitter.com/intent/follow?screen_name=launchdarkly"><img src="https://img.shields.io/twitter/follow/launchdarkly.svg?style=social&amp;label=Follow&amp;maxAge=2592000" alt="Twitter Follow"></a></p>
+<h2 id="supported-net-versions">Supported .NET versions</h2>
+<p>This version of the SDK is built for the following targets:</p>
+<ul>
+<li>.NET 6.0: runs on .NET 6.0 and above.</li>
+<li>.NET Framework 4.7.1: runs on .NET Framework 4.7.1 and above.</li>
+<li>.NET Standard 2.0: runs in any project that is targeted to .NET Standard 2.x rather than to a specific runtime platform.</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<h3 id="installation">Installation</h3>
+<pre><code class="lang-bash">dotnet add package LaunchDarkly.ServerSdk
+dotnet add package LaunchDarkly.OpenFeature.ServerProvider
+dotnet add package OpenFeature
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="lang-csharp">using LaunchDarkly.OpenFeature.ServerProvider;
+using LaunchDarkly.Sdk.Server;
+
+var config = Configuration.Builder(&quot;my-sdk-key&quot;)
+    .StartWaitTime(TimeSpan.FromSeconds(10))
+    .Build();
+
+var provider = new Provider(config);
+
+// If you need access to the LdClient, then you can use GetClient().
+// This can be used for use-cases that are not supported by OpenFeature such as migration flags and track events.
+var ldClient = provider.GetClient()
+
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
+</code></pre>
+<p>Refer to the <a href="https://docs.launchdarkly.com/sdk/server-side/dotnet">SDK reference guide</a> for instructions on getting started with using the SDK.</p>
+<p>For information on using the OpenFeature client please refer to the <a href="https://docs.openfeature.dev/docs/reference/concepts/evaluation-api/">OpenFeature Documentation</a>.</p>
+<h2 id="openfeature-specific-considerations">OpenFeature Specific Considerations</h2>
+<p>LaunchDarkly evaluates contexts, and it can either evaluate a single-context, or a multi-context. When using OpenFeature both single and multi-contexts must be encoded into a single <code>EvaluationContext</code>. This is accomplished by looking for an attribute named <code>kind</code> in the <code>EvaluationContext</code>.</p>
+<p>There are 4 different scenarios related to the <code>kind</code>:</p>
+<ol>
+<li>There is no <code>kind</code> attribute. In this case the provider will treat the context as a single context containing a &quot;user&quot; kind.</li>
+<li>There is a <code>kind</code> attribute, and the value of that attribute is &quot;multi&quot;. This will indicate to the provider that the context is a multi-context.</li>
+<li>There is a <code>kind</code> attribute, and the value of that attribute is a string other than &quot;multi&quot;. This will indicate to the provider a single context of the kind specified.</li>
+<li>There is a <code>kind</code> attribute, and the attribute is not a string. In this case the value of the attribute will be discarded, and the context will be treated as a &quot;user&quot;. An error message will be logged.</li>
+</ol>
+<p>The <code>kind</code> attribute should be a string containing only contain ASCII letters, numbers, <code>.</code>, <code>_</code> or <code>-</code>.</p>
+<p>The OpenFeature specification allows for an optional targeting key, but LaunchDarkly requires a key for evaluation. A targeting key must be specified for each context being evaluated. It may be specified using either <code>targetingKey</code>, as it is in the OpenFeature specification, or <code>key</code>, which is the typical LaunchDarkly identifier for the targeting key. If a <code>targetingKey</code> and a <code>key</code> are specified, then the <code>targetingKey</code> will take precedence.</p>
+<p>The targeting key may also be specified using <code>SetTargetingKey</code>. Currently, if <code>SetTargetingKey</code> is used, and a <code>targetingKey</code> attribute exists, then the attribute will be used instead.</p>
+<p>There are several other attributes which have special functionality within a single or multi-context.</p>
+<ul>
+<li>A key of <code>privateAttributes</code>. Must be an array of string values. <a href="https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.ContextBuilder.html#LaunchDarkly_Sdk_ContextBuilder_Private_System_String___">Equivalent to the 'Private' builder method in the SDK.</a></li>
+<li>A key of <code>anonymous</code>. Must be a boolean value.  <a href="https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.Context.html#LaunchDarkly_Sdk_Context_Anonymous">Equivalent to the 'Anonymous' builder method in the SDK.</a></li>
+<li>A key of <code>name</code>. Must be a string. <a href="https://launchdarkly.github.io/dotnet-server-sdk/api/LaunchDarkly.Sdk.ContextBuilder.html#LaunchDarkly_Sdk_ContextBuilder_Name_System_String_">Equivalent to the 'Name' builder method in the SDK.</a></li>
+</ul>
+<h3 id="examples">Examples</h3>
+<h4 id="a-single-user-context">A single user context</h4>
+<pre><code class="lang-csharp">var evaluationContext = EvaluationContext.Builder()
+  .Set(&quot;targetingKey&quot;, &quot;my-user-key&quot;) // Could also use &quot;key&quot; instead of &quot;targetingKey&quot;.
+  .Build();
+</code></pre>
+<h4 id="a-single-context-of-kind-organization">A single context of kind &quot;organization&quot;</h4>
+<pre><code class="lang-csharp">var evaluationContext = EvaluationContext.Builder()
+  .Set(&quot;kind&quot;, &quot;organization&quot;)
+  .Set(&quot;targetingKey&quot;, &quot;my-org-key&quot;) // Could also use &quot;key&quot; instead of &quot;targetingKey&quot;.
+  .Build();
+</code></pre>
+<h4 id="a-multi-context-containing-a-user-and-an-organization">A multi-context containing a &quot;user&quot; and an &quot;organization&quot;</h4>
+<pre><code class="lang-csharp">var evaluationContext = EvaluationContext.Builder()
+  .Set(&quot;kind&quot;, &quot;multi&quot;) // Lets the provider know this is a multi-context
+  // Every other top level attribute should be a structure representing
+  // individual contexts of the multi-context.
+  // (non-conforming attributes will be ignored and a warning logged).
+  .Set(&quot;organization&quot;, new Structure(new Dictionary&lt;string, Value&gt;
+  {
+    {&quot;targetingKey&quot;, new Value(&quot;my-org-key&quot;)},
+    {&quot;name&quot;, new Value(&quot;the-org-name&quot;)},
+    {&quot;myCustomAttribute&quot;, new Value(&quot;myAttributeValue&quot;)}
+  }))
+  .Set(&quot;user&quot;, new Structure(new Dictionary&lt;string, Value&gt; {
+    {&quot;targetingKey&quot;, new Value(&quot;my-user-key&quot;)},
+  }))
+  .Build();
+</code></pre>
+<h4 id="setting-private-attributes-in-a-single-context">Setting private attributes in a single context</h4>
+<pre><code class="lang-csharp">var evaluationContext = EvaluationContext.Builder()
+  .Set(&quot;kind&quot;, &quot;organization&quot;)
+  .Set(&quot;name&quot;, &quot;the-org-name&quot;)
+  .Set(&quot;targetingKey&quot;, &quot;my-org-key&quot;)
+  .Set(&quot;anonymous&quot;, true)
+  .Set(&quot;myCustomAttribute&quot;, &quot;myCustomValue&quot;)
+  .Set(&quot;privateAttributes&quot;, new Value(new List&lt;Value&gt;{new Value(&quot;myCustomAttribute&quot;)}))
+  .Build();
+</code></pre>
+<h4 id="setting-private-attributes-in-a-multi-context">Setting private attributes in a multi-context</h4>
+<pre><code class="lang-csharp">var evaluationContext = EvaluationContext.Builder()
+  .Set(&quot;kind&quot;, &quot;multi&quot;)
+  .Set(&quot;organization&quot;, new Structure(new Dictionary&lt;string, Value&gt;
+  {
+    {&quot;targetingKey&quot;, new Value(&quot;my-org-key&quot;)},
+    {&quot;name&quot;, new Value(&quot;the-org-name&quot;)},
+    // This will ONLY apply to the &quot;organization&quot; attributes.
+    {&quot;privateAttributes&quot;, new Value(new List&lt;Value&gt;{new Value(&quot;myCustomAttribute&quot;)})}
+    // This attribute will be private.
+    {&quot;myCustomAttribute&quot;, new Value(&quot;myAttributeValue&quot;)},
+  }))
+  .Set(&quot;user&quot;, new Structure(new Dictionary&lt;string, Value&gt; {
+    {&quot;targetingKey&quot;, new Value(&quot;my-user-key&quot;)},
+    {&quot;anonymous&quot;, new Value(true)},
+    // This attribute will not be private.
+    {&quot;myCustomAttribute&quot;, new Value(&quot;myAttributeValue&quot;)},
+  }))
+  .Build();
+</code></pre>
+<h3 id="advanced-usage">Advanced Usage</h3>
+<h4 id="asynchronous-initialization">Asynchronous Initialization</h4>
+<p>The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the <code>startWaitTime</code> to <code>TimeSpan.Zero</code>. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The <code>SetProviderAsync</code> method can be awaited to wait for the SDK to finish initialization.</p>
+<pre><code class="lang-csharp">var config = Configuration.Builder(&quot;my-sdk-key&quot;)
+    .StartWaitTime(TimeSpan.Zero)
+    .Build();
+</code></pre>
+<h4 id="provider-shutdown">Provider Shutdown</h4>
+<p>This provider cannot be re-initialized after being shutdown. This will not impact typical usage, as the LaunchDarkly provider will be set once and used throughout the execution of the application. If you remove the LaunchDarkly Provider, by replacing the default provider or any named providers aliased to the LaunchDarkly provider, then you must create a new provider instance.</p>
+<pre><code class="lang-csharp">var ldProvider = new Provider(config);
+
+await OpenFeature.Api.Instance.SetProviderAsync(provider);
+await OpenFeatute.Api.Instance.SetProviderAsync(new SomeOtherProvider());
+/// The LaunchDarkly provider will be shutdown and SomeOtherProvider will start handling requests.
+
+// This provider will never finish initializing.
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider);
+
+// Instead you should create a new provider.
+var ldProvider2 = new Provider(config);
+await OpenFeature.Api.Instance.SetProviderAsync(ldProvider2);
+
+</code></pre>
+<h2 id="learn-more">Learn more</h2>
+<p>Read our <a href="http://docs.launchdarkly.com">documentation</a> for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the <a href="https://docs.launchdarkly.com/sdk/server-side/dotnet">complete reference guide for this SDK</a>.</p>
+<p>The authoritative description of all properties and methods is in the <a href="https://launchdarkly.github.io/dotnet-server-sdk/">dotnet documentation</a>.</p>
+<h2 id="contributing">Contributing</h2>
+<p>We encourage pull requests and other contributions from the community. Check out our <a href="CONTRIBUTING.html">contributing guidelines</a> for instructions on how to contribute to this SDK.</p>
+<h2 id="about-launchdarkly">About LaunchDarkly</h2>
+<ul>
+<li>LaunchDarkly is a continuous delivery platform that provides feature flags as a service and allows developers to iterate quickly and safely. We allow you to easily flag your features and manage them from the LaunchDarkly dashboard.  With LaunchDarkly, you can:
+<ul>
+<li>Roll out a new feature to a subset of your users (like a group of users who opt-in to a beta tester group), gathering feedback and bug reports from real-world use cases.</li>
+<li>Gradually roll out a feature to an increasing percentage of users, and track the effect that the feature has on key metrics (for instance, how likely is a user to complete a purchase if they have feature A versus feature B?).</li>
+<li>Turn off a feature that you realize is causing performance problems in production, without needing to re-deploy, or even restart the application with a changed configuration file.</li>
+<li>Grant access to certain features based on user attributes, like payment plan (eg: users on the ‘gold’ plan get access to more features than users in the ‘silver’ plan). Disable parts of your application to facilitate maintenance, without taking everything offline.</li>
+</ul>
+</li>
+<li>LaunchDarkly provides feature flag SDKs for a wide variety of languages and technologies. Read <a href="https://docs.launchdarkly.com/sdk">our documentation</a> for a complete list.</li>
+<li>Explore LaunchDarkly
+<ul>
+<li><a href="https://www.launchdarkly.com/" title="LaunchDarkly Main Website">launchdarkly.com</a> for more information</li>
+<li><a href="https://docs.launchdarkly.com/" title="LaunchDarkly Documentation">docs.launchdarkly.com</a> for our documentation and SDK reference guides</li>
+<li><a href="https://apidocs.launchdarkly.com/" title="LaunchDarkly API Documentation">apidocs.launchdarkly.com</a> for our API documentation</li>
+<li><a href="https://blog.launchdarkly.com/" title="LaunchDarkly Blog Documentation">blog.launchdarkly.com</a> for the latest product updates</li>
+</ul>
+</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/launchdarkly/openfeature-dotnet-server/blob/main/README.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      
+      <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="styles/docfx.js"></script>
+    <script type="text/javascript" src="styles/main.js"></script>
+  </body>
+</html>
