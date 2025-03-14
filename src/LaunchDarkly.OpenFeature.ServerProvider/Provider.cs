@@ -183,7 +183,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 {
                     ProviderName = _metadata.Name,
                     Type = ProviderEventTypes.ProviderConfigurationChanged,
-                    FlagsChanged = new List<string> {changeEvent.Key},
+                    FlagsChanged = new List<string> { changeEvent.Key },
                 }).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -215,6 +215,25 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     _statusProvider.SetStatus(ProviderStatus.Fatal, ProviderShutdownMessage);
                     _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
                     break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void Track(string trackingEventName, EvaluationContext evaluationContext = null, TrackingEventDetails trackingEventDetails = default)
+        {
+            var (value, details) = trackingEventDetails.ToLdValue();
+
+            if (value.HasValue)
+            {
+                _client.Track(trackingEventName, _contextConverter.ToLdContext(evaluationContext), details, value.Value);
+            }
+            else if (details.Type != LdValueType.Null)
+            {
+                _client.Track(trackingEventName, _contextConverter.ToLdContext(evaluationContext), details);
+            }
+            else
+            {
+                _client.Track(trackingEventName, _contextConverter.ToLdContext(evaluationContext));
             }
         }
     }
