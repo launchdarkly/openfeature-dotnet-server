@@ -35,6 +35,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(1, readyCount);
         }
 
+#if NET6_0_OR_GREATER
         [Fact(Timeout = 5000)]
         public async Task ItHandlesValidInitializationWhenClientIsReadyAfterADelay()
         {
@@ -118,5 +119,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Thread.Sleep(100);
             Assert.Equal(1, errorCount);
         }
+#endif
     }
 }
