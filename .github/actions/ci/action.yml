@@ -14,7 +14,6 @@ runs:
       with:
         dotnet-version: |
           6.0
-          7.0
           8.0
 
     - name: Restore dotnet dependencies
@@ -26,6 +25,15 @@ runs:
       shell: bash
       id: build
       run: dotnet build
+
+    - name: Conditional Build Frameworks For Tests
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+             echo "BUILDFRAMEWORKS=net471;net6.0;net8.0" >> "$GITHUB_ENV"
+        else
+             echo "BUILDFRAMEWORKS=net6.0;net8.0" >> "$GITHUB_ENV"
+        fi
 
     - name: Run Tests
       if: steps.build.outcome == 'success' && inputs.run_tests == 'true'
