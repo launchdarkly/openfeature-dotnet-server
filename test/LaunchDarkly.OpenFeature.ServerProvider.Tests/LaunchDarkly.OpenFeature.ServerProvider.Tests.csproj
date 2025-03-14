@@ -11,7 +11,7 @@
              Additional information: https://xunit.net/docs/why-no-netstandard
 
              -->
-        <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net471;net6.0;net8.0</BuildFrameworks>
+        <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net471;net8.0;net9.0</BuildFrameworks>
         <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
 
         <IsPackable>false</IsPackable>
