@@ -272,5 +272,73 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Single(eventPayloadB?.FlagsChanged ?? new List<string>());
             Assert.NotEqual(eventPayloadA?.FlagsChanged[0], eventPayloadB?.FlagsChanged[0]);
         }
+
+        [Fact(Timeout = 5000)]
+        public void ItTracksCustomEvents()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
+            var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mock.Setup(l => l.Track("event-key-123abc", _converter.ToLdContext(evaluationContext))).Verifiable();
+            var provider = new Provider(mock.Object);
+
+            provider.Track("event-key-123abc", evaluationContext);
+
+            mock.Verify();
+        }
+
+        [Fact(Timeout = 5000)]
+        public void ItTracksCustomEventsWithValue()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
+            var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mock.Setup(l => l.Track("event-key-123abc", _converter.ToLdContext(evaluationContext), LdValue.Null, 99.77)).Verifiable();
+            var provider = new Provider(mock.Object);
+
+            provider.Track("event-key-123abc", evaluationContext, TrackingEventDetails.Builder().SetValue(99.77).Build());
+
+            mock.Verify();
+        }
+
+        [Fact(Timeout = 5000)]
+        public void ItTracksCustomEventsWithDetails()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
+            var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mock.Setup(l => l.Track("event-key-123abc", _converter.ToLdContext(evaluationContext), LdValue.BuildObject().Set("color", "red").Build())).Verifiable();
+            var provider = new Provider(mock.Object);
+
+            provider.Track("event-key-123abc", evaluationContext, TrackingEventDetails.Builder().Set("color", "red").Build());
+
+            mock.Verify();
+        }
+
+        [Fact(Timeout = 5000)]
+        public void ItTracksCustomEventsWithDetailsAndValue()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "the-key")
+                .Build();
+            var mock = new Mock<ILdClient>();
+            mock.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mock.Setup(l => l.Track("event-key-123abc", _converter.ToLdContext(evaluationContext), LdValue.BuildObject().Set("currency", "USD").Build(), 99.77)).Verifiable();
+            var provider = new Provider(mock.Object);
+
+            provider.Track("event-key-123abc", evaluationContext, TrackingEventDetails.Builder().SetValue(99.77).Set("currency", "USD").Build());
+
+            mock.Verify();
+        }
     }
 }
