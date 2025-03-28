@@ -8,14 +8,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 {
     public sealed partial class Provider
     {
-        private class StatusProvider
+        private sealed class StatusProvider
         {
             private ProviderStatus _providerStatus = ProviderStatus.NotReady;
             private bool _firstEvent = true;
-            private object _statusLock = new object();
-            private Channel<object> _eventChannel;
-            private string _providerName;
-            private Logger _logger;
+            private readonly object _statusLock = new object();
+            private readonly Channel<object> _eventChannel;
+            private readonly string _providerName;
+            private readonly Logger _logger;
 
             public StatusProvider(Channel<object> eventChannel, string providerName, Logger logger)
             {
