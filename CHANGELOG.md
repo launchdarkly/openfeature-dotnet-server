@@ -2,6 +2,14 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.1.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.0.0...2.1.0) (2025-04-01)
+
+
+### Features
+
+* Add support for Tracking API  ([a6278a4](https://github.com/launchdarkly/openfeature-dotnet-server/commit/a6278a40f262538c5a4bc18ccc6cf6bd35054a11))
+* Bump minimum OpenFeature SDK version to 2.2. ([a6278a4](https://github.com/launchdarkly/openfeature-dotnet-server/commit/a6278a40f262538c5a4bc18ccc6cf6bd35054a11))
+
 ## [2.0.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/1.0.0...2.0.0) (2024-08-26)
 
 
