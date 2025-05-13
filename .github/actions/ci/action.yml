@@ -28,15 +28,18 @@ runs:
 
     - name: Conditional Build Frameworks For Tests
       shell: bash
+      id: build_frameworks
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
-             echo "BUILDFRAMEWORKS=net471;net6.0;net8.0" >> "$GITHUB_ENV"
+             echo "BUILDFRAMEWORKS=net471;net6.0;net8.0" >> "$GITHUB_OUTPUT"
         else
-             echo "BUILDFRAMEWORKS=net6.0;net8.0" >> "$GITHUB_ENV"
+             echo "BUILDFRAMEWORKS=net6.0;net8.0" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Run Tests
       if: steps.build.outcome == 'success' && inputs.run_tests == 'true'
+      env:
+        BUILDFRAMEWORKS: ${{ steps.build_frameworks.outputs.BUILDFRAMEWORKS }}
       shell: bash
       run: dotnet test
 
