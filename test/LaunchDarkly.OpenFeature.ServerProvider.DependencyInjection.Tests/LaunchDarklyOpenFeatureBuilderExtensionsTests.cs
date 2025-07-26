@@ -40,7 +40,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(config);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
             Assert.NotNull(registeredConfig);
             Assert.True(registeredConfig.Offline);
@@ -58,7 +58,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(config);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config1 = serviceProvider.GetRequiredService<Configuration>();
             var config2 = serviceProvider.GetRequiredService<Configuration>();
             Assert.Same(config1, config2);
@@ -78,7 +78,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(config2); // Should not replace the first
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
             Assert.True(registeredConfig.Offline); // Should still be the first configuration
         }
@@ -114,7 +114,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestDomain, config);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(registeredConfig);
             Assert.True(registeredConfig.Offline);
@@ -132,7 +132,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestDomain, config);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             var config2 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.Same(config1, config2);
@@ -172,7 +172,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(domain2, config2);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig1 = serviceProvider.GetRequiredKeyedService<Configuration>(domain1);
             var registeredConfig2 = serviceProvider.GetRequiredKeyedService<Configuration>(domain2);
             Assert.NotSame(registeredConfig1, registeredConfig2);
@@ -209,7 +209,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestSdkKey);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredService<Configuration>();
             Assert.NotNull(config);
         }
@@ -234,7 +234,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             // Assert
             Assert.Same(builder, result);
             
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredService<Configuration>();
             
             Assert.True(configureWasCalled);
@@ -286,7 +286,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestDomain, TestSdkKey);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(config);
         }
@@ -298,24 +298,21 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
             var configureWasCalled = false;
-            ConfigurationBuilder capturedBuilder = null;
 
             // Act
             var result = builder.UseLaunchDarkly(TestDomain, TestSdkKey, configBuilder =>
             {
                 configureWasCalled = true;
-                capturedBuilder = configBuilder;
                 configBuilder.Offline(true);
             });
 
             // Assert
             Assert.Same(builder, result);
             
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             
             Assert.True(configureWasCalled);
-            Assert.NotNull(capturedBuilder);
             Assert.True(config.Offline);
         }
 
@@ -327,10 +324,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var builder = new OpenFeatureBuilder(services);
             var expectedException = new InvalidOperationException("Test exception");
 
-            // Act & Assert
-            // The exception should be thrown immediately during registration due to early validation
-            var actualException = Assert.Throws<InvalidOperationException>(() => 
+            // Act
+            var registerWithThrowing = () => Assert.Throws<InvalidOperationException>(() =>
                 builder.UseLaunchDarkly(TestDomain, TestSdkKey, _ => throw expectedException));
+
+            // Assert
+            // The exception should be thrown immediately during registration due to early validation
+            var actualException = registerWithThrowing();
             Assert.Same(expectedException, actualException);
         }
 
@@ -345,7 +345,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var result = builder.UseLaunchDarkly(TestDomain, TestSdkKey, null);
             
             Assert.Same(builder, result);
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(config);
         }
@@ -443,7 +443,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(originalConfig);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
             
             // The registered config should be a rebuilt version, not the same instance
@@ -467,7 +467,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
             Assert.True(registeredConfig.Offline);
             Assert.Equal(startWaitTime, registeredConfig.StartWaitTime);
@@ -489,7 +489,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var registeredConfig = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.True(registeredConfig.Offline);
             Assert.Equal(startWaitTime, registeredConfig.StartWaitTime);
@@ -510,7 +510,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestSdkKey, cfg => cfg.Offline(true));
 
             // Assert - If we reach here, early validation passed
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredService<Configuration>();
             Assert.NotNull(config);
             Assert.True(config.Offline);
@@ -527,7 +527,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             builder.UseLaunchDarkly(TestDomain, TestSdkKey, cfg => cfg.Offline(true));
 
             // Assert - If we reach here, early validation passed
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(config);
             Assert.True(config.Offline);
