@@ -6,7 +6,6 @@ using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 {
-#if NET8_0_OR_GREATER
     public class LaunchDarklyOpenFeatureBuilderExtensionsTests
     {
         private const string TestSdkKey = "test-sdk-key";
@@ -486,5 +485,4 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
         #endregion
     }
-#endif
 }
