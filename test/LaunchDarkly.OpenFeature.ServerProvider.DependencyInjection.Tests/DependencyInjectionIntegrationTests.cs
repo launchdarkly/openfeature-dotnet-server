@@ -27,7 +27,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             var serviceProvider = services.BuildServiceProvider(true);
-            var api = serviceProvider.GetRequiredService<FeatureClient>();
+            var api = serviceProvider.GetRequiredService<IFeatureClient>();
 
             // Act
             // Since we're using offline mode, the flag will return the default value
@@ -48,7 +48,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             var serviceProvider = services.BuildServiceProvider(true);
-            var api = serviceProvider.GetRequiredKeyedService<FeatureClient>(TestDomain);
+            var api = serviceProvider.GetRequiredKeyedService<IFeatureClient>(TestDomain);
 
             // Act
             // Since we're using offline mode, the flag will return the default value
@@ -75,8 +75,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var serviceProvider = services.BuildServiceProvider(true);
 
             // Act
-            var client1 = serviceProvider.GetRequiredKeyedService<FeatureClient>(domain1);
-            var client2 = serviceProvider.GetRequiredKeyedService<FeatureClient>(domain2);
+            var client1 = serviceProvider.GetRequiredKeyedService<IFeatureClient>(domain1);
+            var client2 = serviceProvider.GetRequiredKeyedService<IFeatureClient>(domain2);
 
             // Assert
             Assert.NotSame(client1, client2);
@@ -135,7 +135,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             var serviceProvider = services.BuildServiceProvider(true);
-            var api = serviceProvider.GetRequiredService<FeatureClient>();
+            var api = serviceProvider.GetRequiredService<IFeatureClient>();
 
             // Act & Assert - Test all supported types
             var boolResult = await api.GetBooleanValueAsync("bool-flag", true);
@@ -165,7 +165,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             var serviceProvider = services.BuildServiceProvider(true);
-            var api = serviceProvider.GetRequiredService<FeatureClient>();
+            var api = serviceProvider.GetRequiredService<IFeatureClient>();
 
             // Act
             var result = await api.GetBooleanDetailsAsync(TestFlagKey, false);
