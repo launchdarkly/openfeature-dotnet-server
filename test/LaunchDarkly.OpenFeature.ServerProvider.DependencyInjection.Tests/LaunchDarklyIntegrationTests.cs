@@ -18,58 +18,51 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         #region Helper Methods
 
         /// <summary>
-        /// Creates a service provider with OpenFeature and LaunchDarkly configured for the default provider.
+        /// Configures an <see cref="IServiceProvider"/> with OpenFeature and LaunchDarkly as the default feature provider.
         /// </summary>
-        /// <param name="configure">Optional configuration delegate for customizing LaunchDarkly settings.</param>
-        /// <returns>A configured service provider with scope validation enabled.</returns>
-        private static async Task<IServiceProvider> CreateServiceProviderWithDefaultLaunchDarklyAsync(Action<ConfigurationBuilder> configure = null)
-        {
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddOpenFeature(builder =>
-            {
-                if (configure != null)
-                {
-                    builder.UseLaunchDarkly(TestSdkKey, configure);
-                }
-                else
-                {
-                    builder.UseLaunchDarkly(TestSdkKey);
-                }
-            });
-
-            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-
-            var lifecycleManager = serviceProvider.GetRequiredService<IFeatureLifecycleManager>();
-            await lifecycleManager.EnsureInitializedAsync();
-
-            return serviceProvider;
-        }
+        /// <param name="configure">
+        /// Optional delegate to customize the LaunchDarkly <see cref="ConfigurationBuilder"/> during registration.
+        /// </param>
+        /// <returns>
+        /// An initialized <see cref="IServiceProvider"/> with LaunchDarkly configured as the default provider.
+        /// </returns>
+        private static ValueTask<IServiceProvider> ConfigureLaunchDarklyAsync(Action<ConfigurationBuilder> configure = null)
+            => ConfigureOpenFeatureAsync(builder => builder.UseLaunchDarkly(TestSdkKey, configure));
 
         /// <summary>
-        /// Creates a service provider with OpenFeature and LaunchDarkly configured for a domain-scoped provider.
+        /// Configures an <see cref="IServiceProvider"/> with OpenFeature and LaunchDarkly registered as a domain-scoped feature provider.
         /// </summary>
-        /// <param name="domain">The domain identifier for the scoped provider.</param>
-        /// <param name="configure">Optional configuration delegate for customizing LaunchDarkly settings.</param>
-        /// <returns>A configured service provider with scope validation enabled.</returns>
-        private static async Task<IServiceProvider> CreateServiceProviderWithDomainLaunchDarklyAsync(string domain, Action<ConfigurationBuilder> configure = null)
+        /// <param name="domain">The domain identifier to associate with the scoped provider (e.g., tenant or environment).</param>
+        /// <param name="configure">
+        /// Optional delegate to customize the LaunchDarkly <see cref="ConfigurationBuilder"/> for the specified domain.
+        /// </param>
+        /// <returns>
+        /// An initialized <see cref="IServiceProvider"/> with domain-scoped LaunchDarkly support.
+        /// </returns>
+        private static ValueTask<IServiceProvider> ConfigureLaunchDarklyAsync(string domain, Action<ConfigurationBuilder> configure = null)
+            => ConfigureOpenFeatureAsync(builder => builder.UseLaunchDarkly(domain, TestSdkKey, configure));
+
+        /// <summary>
+        /// Configures an <see cref="IServiceProvider"/> with OpenFeature and one or more feature providers.
+        /// </summary>
+        /// <param name="configureBuilder">
+        /// Delegate to configure the <see cref="OpenFeatureBuilder"/> with feature providers.
+        /// </param>
+        /// <returns>
+        /// An initialized <see cref="IServiceProvider"/> with provider lifecycle setup and validation enabled.
+        /// </returns>
+        private static async ValueTask<IServiceProvider> ConfigureOpenFeatureAsync(Action<OpenFeatureBuilder> configureBuilder)
         {
             var services = new ServiceCollection();
             services.AddLogging();
-            services.AddOpenFeature(builder =>
-            {
-                if (configure != null)
-                {
-                    builder.UseLaunchDarkly(domain, TestSdkKey, configure);
-                }
-                else
-                {
-                    builder.UseLaunchDarkly(domain, TestSdkKey);
-                }
-            });
 
+            // Register OpenFeature with the configured providers
+            services.AddOpenFeature(configureBuilder);
+
+            // Build the root service provider with scope validation enabled
             var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
+            // Ensure the feature provider lifecycle is initialized (e.g., LaunchDarkly ready for evaluations)
             var lifecycleManager = serviceProvider.GetRequiredService<IFeatureLifecycleManager>();
             await lifecycleManager.EnsureInitializedAsync();
 
@@ -87,24 +80,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             return scopeFactory.CreateScope().ServiceProvider;
         }
 
-        /// <summary>
-        /// Creates a service provider with multiple OpenFeature providers configured.
-        /// </summary>
-        /// <param name="configureBuilder">Action to configure multiple providers on the OpenFeature builder.</param>
-        /// <returns>A configured service provider with scope validation enabled.</returns>
-        private static async Task<IServiceProvider> CreateServiceProviderWithMultipleProvidersAsync(Action<OpenFeatureBuilder> configureBuilder)
-        {
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddOpenFeature(configureBuilder);
-            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-
-            var lifecycleManager = serviceProvider.GetRequiredService<IFeatureLifecycleManager>();
-            await lifecycleManager.EnsureInitializedAsync();
-
-            return serviceProvider;
-        }
-
         #endregion
 
         #region Configuration Overload Integration Tests
@@ -113,12 +88,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task ConfigurationOverload_DefaultProvider_ShouldResolveFeatureClientSuccessfully()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredService<IFeatureClient>();
+            var client = scopedProvider.GetRequiredService<IFeatureClient>();
 
             // Act
-            var result = await api.GetBooleanValueAsync(TestFlagKey, false);
+            var result = await client.GetBooleanValueAsync(TestFlagKey, false);
 
             // Assert
             Assert.False(result); // Default value should be returned in offline mode
@@ -128,12 +103,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task ConfigurationOverload_DomainProvider_ShouldResolveKeyedFeatureClientSuccessfully()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredKeyedService<IFeatureClient>(TestDomain);
+            var client = scopedProvider.GetRequiredKeyedService<IFeatureClient>(TestDomain);
 
             // Act
-            var result = await api.GetBooleanValueAsync(TestFlagKey, true);
+            var result = await client.GetBooleanValueAsync(TestFlagKey, true);
 
             // Assert
             Assert.True(result); // Default value should be returned in offline mode
@@ -144,7 +119,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         {
             // Arrange
             var startWaitTime = TimeSpan.FromSeconds(5);
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg
                 .Offline(true)
                 .StartWaitTime(startWaitTime));
 
@@ -161,7 +136,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         {
             // Arrange
             var startWaitTime = TimeSpan.FromSeconds(10);
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg
                 .Offline(true)
                 .StartWaitTime(startWaitTime));
 
@@ -181,12 +156,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task SdkKeyOverload_DefaultProvider_ShouldResolveFeatureClientSuccessfully()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredService<IFeatureClient>();
+            var client = scopedProvider.GetRequiredService<IFeatureClient>();
 
             // Act
-            var result = await api.GetBooleanValueAsync(TestFlagKey, false);
+            var result = await client.GetBooleanValueAsync(TestFlagKey, false);
 
             // Assert
             Assert.False(result); // Default value should be returned in offline mode
@@ -196,12 +171,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task SdkKeyOverload_DomainProvider_ShouldResolveKeyedFeatureClientSuccessfully()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredKeyedService<IFeatureClient>(TestDomain);
+            var client = scopedProvider.GetRequiredKeyedService<IFeatureClient>(TestDomain);
 
             // Act
-            var result = await api.GetBooleanValueAsync(TestFlagKey, true);
+            var result = await client.GetBooleanValueAsync(TestFlagKey, true);
 
             // Assert
             Assert.True(result); // Default value should be returned in offline mode
@@ -212,7 +187,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         {
             // Arrange
             var startWaitTime = TimeSpan.FromSeconds(3);
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg
                 .Offline(true)
                 .StartWaitTime(startWaitTime));
 
@@ -229,7 +204,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         {
             // Arrange
             var startWaitTime = TimeSpan.FromSeconds(7);
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg
                 .Offline(true)
                 .StartWaitTime(startWaitTime));
 
@@ -249,7 +224,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task MultiProvider_MixedOverloads_ShouldRegisterBothDefaultAndDomainProvidersCorrectly()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithMultipleProvidersAsync(builder =>
+            var serviceProvider = await ConfigureOpenFeatureAsync(builder =>
             {
                 // Register both default and domain-scoped providers using different overloads
                 builder
@@ -260,20 +235,25 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
                         policy.DefaultNameSelector = _ => "domain1";
                     });
             });
-            
+
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
 
             // Act
             var defaultClient = scopedProvider.GetRequiredService<IFeatureClient>();
-            var domainClient = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain2");
-            var defaultConfigRegistered = serviceProvider.GetRequiredService<Configuration>();
-            var domainConfigRegistered = serviceProvider.GetRequiredKeyedService<Configuration>("domain2");
+            var domain1Client = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain1");
+            var domain2Client = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain2");
+
+            var defaultConfig = serviceProvider.GetRequiredService<Configuration>();
+            var domain1Config = serviceProvider.GetRequiredKeyedService<Configuration>("domain1");
+            var domain2Config = serviceProvider.GetRequiredKeyedService<Configuration>("domain2");
 
             // Assert
-            Assert.NotSame(defaultClient, domainClient);
-            Assert.NotSame(defaultConfigRegistered, domainConfigRegistered);
-            Assert.True(defaultConfigRegistered.Offline);
-            Assert.True(domainConfigRegistered.Offline);
+            Assert.Same(defaultClient, domain1Client);
+            Assert.NotSame(domain1Client, domain2Client);
+            Assert.NotSame(domain1Config, domain2Config);
+
+            Assert.True(domain1Config.Offline, "Expected 'domain1' LaunchDarkly config to be in offline mode.");
+            Assert.True(domain2Config.Offline, "Expected 'domain2' LaunchDarkly config to be in offline mode.");
         }
 
         [Fact]
@@ -285,13 +265,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var fastStartWait = TimeSpan.FromMilliseconds(100);
             var slowStartWait = TimeSpan.FromSeconds(5);
 
-            var serviceProvider = await CreateServiceProviderWithMultipleProvidersAsync(builder =>
+            var serviceProvider = await ConfigureOpenFeatureAsync(builder =>
             {
                 // Register using different configurations for variety
                 builder.UseLaunchDarkly(fastDomain, TestSdkKey, cfg => cfg
                     .Offline(true)
                     .StartWaitTime(fastStartWait));
-                
+
                 builder.UseLaunchDarkly(slowDomain, TestSdkKey, cfg => cfg
                     .Offline(true)
                     .StartWaitTime(slowStartWait));
@@ -302,7 +282,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             // Act & Assert
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(fastDomain);
             var config2 = serviceProvider.GetRequiredKeyedService<Configuration>(slowDomain);
-            
+
             Assert.NotSame(config1, config2);
             Assert.Equal(fastStartWait, config1.StartWaitTime);
             Assert.Equal(slowStartWait, config2.StartWaitTime);
@@ -318,7 +298,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task AllOverloads_FeatureProviders_ShouldSupportAllOpenFeatureValueTypes()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithMultipleProvidersAsync(builder =>
+            var serviceProvider = await ConfigureOpenFeatureAsync(builder =>
             {
                 // Test all SDK key overloads
                 builder.UseLaunchDarkly("domain1", TestSdkKey, cfg => cfg.Offline(true)); // Default provider
@@ -328,28 +308,28 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             });
 
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            
-            var defaultApi = scopedProvider.GetRequiredService<IFeatureClient>();
-            var domain1Api = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain1");
-            var domain2Api = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain2");
-            var domain3Api = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain3");
 
+            var defaultClient = scopedProvider.GetRequiredService<IFeatureClient>();
+            var domain1Client = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain1");
+            var domain2Client = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain2");
+            var domain3Client = scopedProvider.GetRequiredKeyedService<IFeatureClient>("domain3");
+            
             // Act & Assert - Test all supported types on all providers
-            foreach (var api in new[] { defaultApi, domain1Api, domain2Api, domain3Api })
+            foreach (var client in new[] { defaultClient, domain1Client, domain2Client, domain3Client })
             {
-                var boolResult = await api.GetBooleanValueAsync("bool-flag", true);
+                var boolResult = await client.GetBooleanValueAsync("bool-flag", true);
                 Assert.True(boolResult);
 
-                var stringResult = await api.GetStringValueAsync("string-flag", "default");
+                var stringResult = await client.GetStringValueAsync("string-flag", "default");
                 Assert.Equal("default", stringResult);
 
-                var intResult = await api.GetIntegerValueAsync("int-flag", 42);
+                var intResult = await client.GetIntegerValueAsync("int-flag", 42);
                 Assert.Equal(42, intResult);
 
-                var doubleResult = await api.GetDoubleValueAsync("double-flag", 3.14);
+                var doubleResult = await client.GetDoubleValueAsync("double-flag", 3.14);
                 Assert.Equal(3.14, doubleResult);
 
-                var structureResult = await api.GetObjectValueAsync("object-flag", new Value("default"));
+                var structureResult = await client.GetObjectValueAsync("object-flag", new Value("default"));
                 Assert.Equal("default", structureResult.AsString);
             }
         }
@@ -362,12 +342,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task DefaultProvider_InOfflineMode_ShouldReturnCorrectReasonAndDefaultValue()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredService<IFeatureClient>();
+            var client = scopedProvider.GetRequiredService<IFeatureClient>();
 
             // Act
-            var result = await api.GetBooleanDetailsAsync(TestFlagKey, false);
+            var result = await client.GetBooleanDetailsAsync(TestFlagKey, false);
 
             // Assert
             Assert.False(result.Value);
@@ -377,9 +357,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task DefaultProvider_WithEvaluationContext_ShouldHandleContextCorrectly()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
             var scopedProvider = CreateScopedServiceProvider(serviceProvider);
-            var api = scopedProvider.GetRequiredService<IFeatureClient>();
+            var client = scopedProvider.GetRequiredService<IFeatureClient>();
 
             var context = EvaluationContext.Builder()
                 .Set("userId", "test-user")
@@ -387,7 +367,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
                 .Build();
 
             // Act
-            var result = await api.GetBooleanDetailsAsync(TestFlagKey, false, context);
+            var result = await client.GetBooleanDetailsAsync(TestFlagKey, false, context);
 
             // Assert
             Assert.False(result.Value);
@@ -402,7 +382,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task DefaultProvider_Configuration_ShouldBeRegisteredAsSingleton()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
 
             // Act
             var config1 = serviceProvider.GetRequiredService<Configuration>();
@@ -416,7 +396,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task DomainProvider_Configuration_ShouldBeRegisteredAsKeyedSingleton()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
 
             // Act
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
@@ -430,7 +410,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task TryAddSingleton_MultipleRegistrations_ShouldNotReplaceExistingRegistration()
         {
             // Arrange & Act
-            var serviceProvider = await CreateServiceProviderWithMultipleProvidersAsync(builder =>
+            var serviceProvider = await ConfigureOpenFeatureAsync(builder =>
             {
                 // First registration should win due to TryAddSingleton behavior
                 builder.UseLaunchDarkly(TestSdkKey, cfg => cfg.Offline(true));
@@ -446,7 +426,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task TryAddKeyedSingleton_MultipleRegistrations_ShouldNotReplaceExistingRegistration()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithMultipleProvidersAsync(builder =>
+            var serviceProvider = await ConfigureOpenFeatureAsync(builder =>
             {
                 // First registration should win due to TryAddKeyedSingleton behavior
                 builder.UseLaunchDarkly(TestDomain, TestSdkKey, cfg => cfg.Offline(true));
@@ -469,7 +449,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task ServiceProviderDisposal_AfterUsingProviders_ShouldNotCauseMemoryLeaks()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
 
             // Act
             var config = serviceProvider.GetRequiredService<Configuration>();
@@ -483,8 +463,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task MultipleServiceProviders_WithSameConfiguration_ShouldIsolateConfigurations()
         {
             // Arrange
-            var serviceProvider1 = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
-            var serviceProvider2 = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(false));
+            var serviceProvider1 = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider2 = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(false));
 
             // Act
             var config1 = serviceProvider1.GetRequiredService<Configuration>();
@@ -504,7 +484,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task EarlyValidation_WithValidConfiguration_ShouldPassValidationAndRegisterCorrectly()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDefaultLaunchDarklyAsync(cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(cfg => cfg.Offline(true));
 
             // Act
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
@@ -518,7 +498,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         public async Task EarlyValidation_WithValidDomainConfiguration_ShouldPassValidationAndRegisterCorrectly()
         {
             // Arrange
-            var serviceProvider = await CreateServiceProviderWithDomainLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
+            var serviceProvider = await ConfigureLaunchDarklyAsync(TestDomain, cfg => cfg.Offline(true));
 
             // Act
             var registeredConfig = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
@@ -534,7 +514,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             // Arrange
             var services = new ServiceCollection();
             var config = Configuration.Builder(TestSdkKey).Offline(true).Build();
-            
+
             services.AddOpenFeature(builder =>
             {
                 builder.UseLaunchDarkly(config);
@@ -550,4 +530,4 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
         #endregion
     }
-} 
+}
