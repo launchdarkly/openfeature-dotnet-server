@@ -28,10 +28,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             services.AddLogging();
             services.AddOpenFeature(builder =>
             {
-                builder.AddContext(contextBuilder => {
-                    contextBuilder.Set("targetingKey", "the-key");
-                });
-
                 if (configure != null)
                 {
                     builder.UseLaunchDarkly(TestSdkKey, configure);
