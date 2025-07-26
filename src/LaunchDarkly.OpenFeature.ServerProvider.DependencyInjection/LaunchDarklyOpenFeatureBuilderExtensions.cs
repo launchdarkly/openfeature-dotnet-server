@@ -1,6 +1,7 @@
 ﻿using LaunchDarkly.Sdk.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using OpenFeature;
 using OpenFeature.DependencyInjection;
 using System;
@@ -77,9 +78,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
             Func<IServiceProvider, Configuration> resolveConfiguration)
         {
             // Perform early configuration validation to ensure the provider is correctly constructed.
-            // This avoids runtime failures by eagerly building the configuration during setup.
+            // This ensures any misconfiguration is caught during application startup rather than at runtime.
             var config = createConfiguration();
-            builder.Services.TryAddSingleton(_ => config);
+            builder.Services.TryAddSingleton(config);
 
             return builder.AddProvider(serviceProvider => new Provider(resolveConfiguration(serviceProvider)));
         }
@@ -98,11 +99,25 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
             Func<Configuration> createConfiguration,
             Func<IServiceProvider, object, Configuration> resolveConfiguration)
         {
-            // Applies the same early validation strategy as the default registration path,
-            // ensuring domain-scoped configurations fail fast if misconfigured.
+            // Perform early validation of the configuration to ensure it is valid before registration.
+            // This approach is consistent with the default (non-domain) registration path and helps fail fast on misconfiguration.
             var config = createConfiguration();
-            builder.Services.TryAddKeyedSingleton(domain, (_, obj) => config);
 
+            // Register the domain-scoped configuration as a keyed singleton.
+            builder.Services.TryAddKeyedSingleton(domain, (_, key) => config);
+
+            // Register the default configuration provider, which resolves the appropriate domain-scoped configuration
+            // using the default name selection policy defined in PolicyNameOptions.
+            // This enables resolving Configuration via serviceProvider.GetRequiredService<Configuration>()
+            // when no specific domain key is explicitly provided.
+            builder.Services.TryAddSingleton(provider =>
+            {
+                var policy = provider.GetRequiredService<IOptions<PolicyNameOptions>>().Value;
+                var name = policy.DefaultNameSelector(provider);
+                return provider.GetRequiredKeyedService<Configuration>(name);
+            });
+
+            // Register the domain-scoped provider instance.
             return builder.AddProvider(domain, (serviceProvider, key) => new Provider(resolveConfiguration(serviceProvider, key)));
         }
 
