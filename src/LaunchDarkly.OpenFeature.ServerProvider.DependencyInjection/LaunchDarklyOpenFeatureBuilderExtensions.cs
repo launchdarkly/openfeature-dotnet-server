@@ -76,8 +76,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
             Func<Configuration> createConfiguration,
             Func<IServiceProvider, Configuration> resolveConfiguration)
         {
-            // Perform initial configuration validation before registration.
-            // This ensures that any misconfiguration is detected eagerly during setup.
+            // Perform early configuration validation to ensure the provider is correctly constructed.
+            // This avoids runtime failures by eagerly building the configuration during setup.
             var config = createConfiguration();
             builder.Services.TryAddSingleton(_ => config);
 
@@ -98,8 +98,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
             Func<Configuration> createConfiguration,
             Func<IServiceProvider, object, Configuration> resolveConfiguration)
         {
-            // Perform initial configuration validation before registration.
-            // This ensures that any misconfiguration is detected eagerly during setup.
+            // Applies the same early validation strategy as the default registration path,
+            // ensuring domain-scoped configurations fail fast if misconfigured.
             var config = createConfiguration();
             builder.Services.TryAddKeyedSingleton(domain, (_, obj) => config);
 
