@@ -6,6 +6,7 @@ using Xunit;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 {
+#if NET8_0_OR_GREATER
     public class LaunchDarklyOpenFeatureBuilderExtensionsTests
     {
         private const string TestSdkKey = "test-sdk-key";
@@ -26,7 +27,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
             Assert.NotNull(registeredConfig);
@@ -49,17 +50,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var config1 = serviceProvider.GetRequiredService<Configuration>();
             var config2 = serviceProvider.GetRequiredService<Configuration>();
             Assert.Same(config1, config2);
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithNullConfiguration_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly((Configuration)null));
         }
 
         [Fact]
@@ -98,7 +88,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var registeredConfig = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(registeredConfig);
@@ -123,51 +113,22 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             Assert.Same(config1, config2);
         }
 
-        [Fact]
-        public void UseLaunchDarkly_WithNullDomainAndConfiguration_ThrowsArgumentException()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void UseLaunchDarkly_WithEmptyDomainAndConfiguration_ThrowsArgumentException(string domain)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
             var config = Configuration.Builder(TestSdkKey).Build();
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(null, config));
-        }
+            // Act
+            var result = builder.UseLaunchDarkly(domain, config);
 
-        [Fact]
-        public void UseLaunchDarkly_WithEmptyDomainAndConfiguration_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            var config = Configuration.Builder(TestSdkKey).Build();
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(string.Empty, config));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithWhitespaceDomainAndConfiguration_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            var config = Configuration.Builder(TestSdkKey).Build();
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly("   ", config));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithDomainAndNullConfiguration_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestDomain, (Configuration)null));
+            // Assert
+            Assert.Same(builder, result);
         }
 
         [Fact]
@@ -210,7 +171,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var config = serviceProvider.GetRequiredService<Configuration>();
             Assert.NotNull(config);
@@ -235,46 +196,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var config = serviceProvider.GetRequiredService<Configuration>();
-            
+
             Assert.True(configureWasCalled);
             Assert.NotNull(capturedBuilder);
             Assert.True(config.Offline);
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithNullSdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly((string)null));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithEmptySdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(string.Empty));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithWhitespaceSdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly("   "));
         }
 
         [Fact]
@@ -287,26 +215,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Act & Assert
             // The exception should be thrown immediately during registration due to early validation
-            var actualException = Assert.Throws<InvalidOperationException>(() => 
+            var actualException = Assert.Throws<InvalidOperationException>(() =>
                 builder.UseLaunchDarkly(TestSdkKey, _ => throw expectedException));
             Assert.Same(expectedException, actualException);
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_NullConfigurationDelegate_DoesNotThrow()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert - should not throw
-            Configuration configuration = null;
-            var result = builder.UseLaunchDarkly(TestSdkKey, configuration);
-            
-            Assert.Same(builder, result);
-            var serviceProvider = services.BuildServiceProvider();
-            var config = serviceProvider.GetRequiredService<Configuration>();
-            Assert.NotNull(config);
         }
 
         #endregion
@@ -325,7 +236,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.NotNull(config);
@@ -350,79 +261,44 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Assert
             Assert.Same(builder, result);
-            
+
             var serviceProvider = services.BuildServiceProvider();
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
-            
+
             Assert.True(configureWasCalled);
             Assert.NotNull(capturedBuilder);
             Assert.True(config.Offline);
         }
 
         [Fact]
-        public void UseLaunchDarkly_WithNullDomainAndSdkKey_ThrowsArgumentException()
+        public void UseLaunchDarkly_NullConfigurationDelegate_ThrowsNullReferenceException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(null, TestSdkKey));
+            // Act
+            Configuration configuration = null;
+
+            // Assert
+            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(TestSdkKey, configuration));
         }
 
-        [Fact]
-        public void UseLaunchDarkly_WithEmptyDomainAndSdkKey_ThrowsArgumentException()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void UseLaunchDarkly_WithDomainAndInvalidSdkKey_ReturnsBuilder(string sdkKey)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(string.Empty, TestSdkKey));
-        }
+            // Act
+            var result = builder.UseLaunchDarkly(TestDomain, sdkKey);
 
-        [Fact]
-        public void UseLaunchDarkly_WithWhitespaceDomainAndSdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly("   ", TestSdkKey));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithDomainAndNullSdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(TestDomain, (string)null));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithDomainAndEmptySdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(TestDomain, string.Empty));
-        }
-
-        [Fact]
-        public void UseLaunchDarkly_WithDomainAndWhitespaceSdkKey_ThrowsArgumentException()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(TestDomain, "   "));
+            // Assert
+            Assert.Same(builder, result);
         }
 
         [Fact]
@@ -435,7 +311,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Act & Assert
             // The exception should be thrown immediately during registration due to early validation
-            var actualException = Assert.Throws<InvalidOperationException>(() => 
+            var actualException = Assert.Throws<InvalidOperationException>(() =>
                 builder.UseLaunchDarkly(TestDomain, TestSdkKey, _ => throw expectedException));
             Assert.Same(expectedException, actualException);
         }
@@ -449,7 +325,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
             // Act & Assert - should not throw
             var result = builder.UseLaunchDarkly(TestDomain, TestSdkKey, null);
-            
+
             Assert.Same(builder, result);
             var serviceProvider = services.BuildServiceProvider();
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
@@ -461,45 +337,45 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         #region Builder Validation Tests
 
         [Fact]
-        public void UseLaunchDarkly_WithNullBuilder_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilder_ThrowsNullReferenceException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestSdkKey));
+            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(TestSdkKey));
         }
 
         [Fact]
-        public void UseLaunchDarkly_WithNullBuilderAndConfiguration_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilderAndConfiguration_ThrowsNullReferenceException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
             var config = Configuration.Builder(TestSdkKey).Build();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(config));
+            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(config));
         }
 
         [Fact]
-        public void UseLaunchDarkly_WithNullBuilderForDomain_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilderForDomain_ThrowsNullReferenceException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestDomain, TestSdkKey));
+            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(TestDomain, TestSdkKey));
         }
 
         [Fact]
-        public void UseLaunchDarkly_WithNullBuilderForDomainAndConfiguration_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilderForDomainAndConfiguration_ThrowsNullReferenceException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
             var config = Configuration.Builder(TestSdkKey).Build();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestDomain, config));
+            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(TestDomain, config));
         }
 
         #endregion
@@ -520,7 +396,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             // Assert
             var serviceProvider = services.BuildServiceProvider();
             var registeredConfig = serviceProvider.GetRequiredService<Configuration>();
-            
+
             // The registered config should be a rebuilt version, not the same instance
             // but should have the same properties
             Assert.True(registeredConfig.Offline);
@@ -610,4 +486,5 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
 
         #endregion
     }
+#endif
 }

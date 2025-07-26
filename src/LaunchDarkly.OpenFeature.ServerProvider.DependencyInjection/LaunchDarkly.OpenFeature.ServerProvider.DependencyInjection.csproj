@@ -8,10 +8,8 @@
          single framework that we are testing; this allows us to test with older SDK
          versions that would error out if they saw any newer target frameworks listed
          here, even if we weren't running those. -->
-        <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;net471;net6.0;net8.0</BuildFrameworks>
+        <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net8.0</BuildFrameworks>
         <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
-
-        <EnableEditorConfigSupport>false</EnableEditorConfigSupport>
 
         <DebugType>portable</DebugType>
         <AssemblyName>LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection</AssemblyName>
@@ -41,7 +39,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OpenFeature.DependencyInjection" Version="2.2.0" />
+        <PackageReference Include="OpenFeature.DependencyInjection" Version="[2.2.0, 3.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

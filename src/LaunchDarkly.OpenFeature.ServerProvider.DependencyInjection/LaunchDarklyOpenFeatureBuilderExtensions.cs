@@ -7,6 +7,7 @@ using System;
 
 namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
 {
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Provides extension methods for configuring the <see cref="OpenFeatureBuilder"/> to use LaunchDarkly as a <see cref="FeatureProvider"/>.
     /// </summary>
@@ -130,4 +131,5 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
             return configBuilder.Build();
         }
     }
+#endif
 }
