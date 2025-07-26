@@ -12,20 +12,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         private const string TestDomain = "test-domain";
 
         [Fact]
-        public void AddLaunchDarkly_WithSdkKey_RegistersDefaultProvider()
+        public void UseLaunchDarkly_WithSdkKey_RegistersDefaultProvider()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act
-            var result = builder.AddLaunchDarkly(TestSdkKey);
+            var result = builder.UseLaunchDarkly(TestSdkKey);
 
             // Assert
             Assert.Same(builder, result);
             
             // Build the service provider to verify registrations
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             
             // Verify Configuration is registered as singleton
             var config1 = serviceProvider.GetRequiredService<Configuration>();
@@ -34,7 +34,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithSdkKeyAndConfiguration_RegistersDefaultProviderWithConfiguration()
+        public void UseLaunchDarkly_WithSdkKeyAndConfiguration_RegistersDefaultProviderWithConfiguration()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -43,7 +43,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             ConfigurationBuilder capturedBuilder = null;
 
             // Act
-            var result = builder.AddLaunchDarkly(TestSdkKey, configBuilder =>
+            var result = builder.UseLaunchDarkly(TestSdkKey, configBuilder =>
             {
                 configureWasCalled = true;
                 capturedBuilder = configBuilder;
@@ -54,7 +54,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             Assert.Same(builder, result);
             
             // Build the service provider to verify configuration was applied
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config = serviceProvider.GetRequiredService<Configuration>();
             
             Assert.True(configureWasCalled);
@@ -63,42 +63,42 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithNullSdkKey_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithNullSdkKey_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(null));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(null));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithEmptySdkKey_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithEmptySdkKey_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(string.Empty));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(string.Empty));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithDomainAndSdkKey_RegistersDomainScopedProvider()
+        public void UseLaunchDarkly_WithDomainAndSdkKey_RegistersDomainScopedProvider()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act
-            var result = builder.AddLaunchDarkly(TestDomain, TestSdkKey);
+            var result = builder.UseLaunchDarkly(TestDomain, TestSdkKey);
 
             // Assert
             Assert.Same(builder, result);
             
             // Build the service provider to verify registrations
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             
             // Verify Configuration is registered as keyed singleton
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
@@ -107,7 +107,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithDomainSdkKeyAndConfiguration_RegistersDomainScopedProviderWithConfiguration()
+        public void UseLaunchDarkly_WithDomainSdkKeyAndConfiguration_RegistersDomainScopedProviderWithConfiguration()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -116,7 +116,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             ConfigurationBuilder capturedBuilder = null;
 
             // Act
-            var result = builder.AddLaunchDarkly(TestDomain, TestSdkKey, configBuilder =>
+            var result = builder.UseLaunchDarkly(TestDomain, TestSdkKey, configBuilder =>
             {
                 configureWasCalled = true;
                 capturedBuilder = configBuilder;
@@ -127,7 +127,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             Assert.Same(builder, result);
             
             // Build the service provider to verify configuration was applied
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             
             Assert.True(configureWasCalled);
@@ -136,87 +136,96 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithNullDomain_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithNullDomain_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(null, TestSdkKey));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(null, TestSdkKey));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithEmptyDomain_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithEmptyDomain_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(string.Empty, TestSdkKey));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(string.Empty, TestSdkKey));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithDomainAndNullSdkKey_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithDomainAndNullSdkKey_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(TestDomain, null));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(TestDomain, null));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithDomainAndEmptySdkKey_ThrowsArgumentException()
+        public void UseLaunchDarkly_WithDomainAndEmptySdkKey_ThrowsArgumentException()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
+            try
+            {
+                builder.UseLaunchDarkly(TestDomain, string.Empty);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => builder.AddLaunchDarkly(TestDomain, string.Empty));
+            Assert.Throws<ArgumentException>(() => builder.UseLaunchDarkly(TestDomain, string.Empty));
         }
 
         [Fact]
-        public void AddLaunchDarkly_MultipleCallsWithSameSdkKey_UsesSameConfigurationInstance()
+        public void UseLaunchDarkly_MultipleCallsWithSameSdkKey_UsesSameConfigurationInstance()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act
-            builder.AddLaunchDarkly(TestSdkKey);
-            builder.AddLaunchDarkly(TestSdkKey); // Second call should not replace the first due to TryAddSingleton
+            builder.UseLaunchDarkly(TestSdkKey);
+            builder.UseLaunchDarkly(TestSdkKey); // Second call should not replace the first due to TryAddSingleton
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config1 = serviceProvider.GetRequiredService<Configuration>();
             var config2 = serviceProvider.GetRequiredService<Configuration>();
             Assert.Same(config1, config2);
         }
 
         [Fact]
-        public void AddLaunchDarkly_MultipleCallsWithSameDomain_UsesSameConfigurationInstance()
+        public void UseLaunchDarkly_MultipleCallsWithSameDomain_UsesSameConfigurationInstance()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenFeatureBuilder(services);
 
             // Act
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey);
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey); // Second call should not replace the first due to TryAddKeyedSingleton
+            builder.UseLaunchDarkly(TestDomain, TestSdkKey);
+            builder.UseLaunchDarkly(TestDomain, TestSdkKey); // Second call should not replace the first due to TryAddKeyedSingleton
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             var config2 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
             Assert.Same(config1, config2);
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithDifferentDomains_RegistersSeparateConfigurations()
+        public void UseLaunchDarkly_WithDifferentDomains_RegistersSeparateConfigurations()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -225,18 +234,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             const string domain2 = "domain2";
 
             // Act
-            builder.AddLaunchDarkly(domain1, TestSdkKey);
-            builder.AddLaunchDarkly(domain2, TestSdkKey);
+            builder.UseLaunchDarkly(domain1, TestSdkKey);
+            builder.UseLaunchDarkly(domain2, TestSdkKey);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(domain1);
             var config2 = serviceProvider.GetRequiredKeyedService<Configuration>(domain2);
             Assert.NotSame(config1, config2);
         }
 
         [Fact]
-        public void AddLaunchDarkly_ConfigurationDelegateException_PropagatesException()
+        public void UseLaunchDarkly_ConfigurationDelegateException_PropagatesException()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -244,17 +253,17 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var expectedException = new InvalidOperationException("Test exception");
 
             // Act
-            builder.AddLaunchDarkly(TestSdkKey, _ => throw expectedException);
+            builder.UseLaunchDarkly(TestSdkKey, _ => throw expectedException);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var actualException = Assert.Throws<InvalidOperationException>(() => 
                 serviceProvider.GetRequiredService<Configuration>());
             Assert.Same(expectedException, actualException);
         }
 
         [Fact]
-        public void AddLaunchDarkly_DomainConfigurationDelegateException_PropagatesException()
+        public void UseLaunchDarkly_DomainConfigurationDelegateException_PropagatesException()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -262,10 +271,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var expectedException = new InvalidOperationException("Test exception");
 
             // Act
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey, _ => throw expectedException);
+            builder.UseLaunchDarkly(TestDomain, TestSdkKey, _ => throw expectedException);
 
             // Assert
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var actualException = Assert.Throws<InvalidOperationException>(() => 
                 serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain));
             Assert.Same(expectedException, actualException);

@@ -29,10 +29,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="LaunchDarkly.ServerSdk" Version="8.5.1" />
-        <PackageReference Include="LaunchDarkly.TestHelpers" Version="2.0.0" />
-        <PackageReference Include="Moq" Version="4.8.1" />
-        <PackageReference Include="OpenFeature" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     </ItemGroup>
 

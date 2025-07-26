@@ -17,15 +17,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         private const string TestFlagKey = "test-flag";
 
         [Fact]
-        public async Task AddLaunchDarkly_CanResolveDefaultProvider()
+        public async Task UseLaunchDarkly_CanResolveDefaultProvider()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var api = serviceProvider.GetRequiredService<FeatureClient>();
 
             // Act
@@ -37,15 +38,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public async Task AddLaunchDarkly_CanResolveDomainScopedProvider()
+        public async Task UseLaunchDarkly_CanResolveDomainScopedProvider()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestDomain, TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var api = serviceProvider.GetRequiredKeyedService<FeatureClient>(TestDomain);
 
             // Act
@@ -57,18 +59,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_ProvidersFromDifferentDomainsAreDistinct()
+        public void UseLaunchDarkly_ProvidersFromDifferentDomainsAreDistinct()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
             const string domain1 = "domain1";
             const string domain2 = "domain2";
-            
-            builder.AddLaunchDarkly(domain1, TestSdkKey, config => config.Offline(true));
-            builder.AddLaunchDarkly(domain2, TestSdkKey, config => config.Offline(true));
 
-            var serviceProvider = services.BuildServiceProvider();
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(domain1, TestSdkKey, config => config.Offline(true));
+                builder.UseLaunchDarkly(domain2, TestSdkKey, config => config.Offline(true));
+            });
+
+            var serviceProvider = services.BuildServiceProvider(true);
 
             // Act
             var client1 = serviceProvider.GetRequiredKeyedService<FeatureClient>(domain1);
@@ -79,15 +83,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_ConfigurationIsSharedWithinSameDomain()
+        public void UseLaunchDarkly_ConfigurationIsSharedWithinSameDomain()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestDomain, TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
 
             // Act
             var config1 = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
@@ -99,15 +104,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_DefaultConfigurationIsShared()
+        public void UseLaunchDarkly_DefaultConfigurationIsShared()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
 
             // Act
             var config1 = serviceProvider.GetRequiredService<Configuration>();
@@ -119,15 +125,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public async Task AddLaunchDarkly_ProviderSupportsAllValueTypes()
+        public async Task UseLaunchDarkly_ProviderSupportsAllValueTypes()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var api = serviceProvider.GetRequiredService<FeatureClient>();
 
             // Act & Assert - Test all supported types
@@ -148,15 +155,16 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public async Task AddLaunchDarkly_ProviderReturnsCorrectReasonInOfflineMode()
+        public async Task UseLaunchDarkly_ProviderReturnsCorrectReasonInOfflineMode()
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenFeatureBuilder(services);
-            
-            builder.AddLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            services.AddOpenFeature(builder =>
+            {
+                builder.UseLaunchDarkly(TestSdkKey, config => config.Offline(true));
+            });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var api = serviceProvider.GetRequiredService<FeatureClient>();
 
             // Act
@@ -168,27 +176,27 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithNullBuilder_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilder_ThrowsArgumentNullException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.AddLaunchDarkly(TestSdkKey));
+            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestSdkKey));
         }
 
         [Fact]
-        public void AddLaunchDarkly_WithNullBuilderForDomain_ThrowsArgumentNullException()
+        public void UseLaunchDarkly_WithNullBuilderForDomain_ThrowsArgumentNullException()
         {
             // Arrange
             OpenFeatureBuilder builder = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => builder.AddLaunchDarkly(TestDomain, TestSdkKey));
+            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestDomain, TestSdkKey));
         }
 
         [Fact]
-        public void AddLaunchDarkly_CustomConfigurationIsApplied()
+        public void UseLaunchDarkly_CustomConfigurationIsApplied()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -196,13 +204,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var startWaitTime = TimeSpan.FromSeconds(1);
 
             // Act
-            builder.AddLaunchDarkly(TestSdkKey, cfg =>
+            builder.UseLaunchDarkly(TestSdkKey, cfg =>
             {
                 cfg.Offline(true);
                 cfg.StartWaitTime(startWaitTime);
             });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config = serviceProvider.GetRequiredService<Configuration>();
 
             // Assert
@@ -211,7 +219,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AddLaunchDarkly_DomainCustomConfigurationIsApplied()
+        public void UseLaunchDarkly_DomainCustomConfigurationIsApplied()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -219,13 +227,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var startWaitTime = TimeSpan.FromSeconds(2);
 
             // Act
-            builder.AddLaunchDarkly(TestDomain, TestSdkKey, cfg =>
+            builder.UseLaunchDarkly(TestDomain, TestSdkKey, cfg =>
             {
                 cfg.Offline(true);
                 cfg.StartWaitTime(startWaitTime);
             });
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider(true);
             var config = serviceProvider.GetRequiredKeyedService<Configuration>(TestDomain);
 
             // Assert
@@ -233,4 +241,4 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             Assert.Equal(startWaitTime, config.StartWaitTime);
         }
     }
-} 
+}
