@@ -325,7 +325,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             var expectedException = new InvalidOperationException("Test exception");
 
             // Act
-            var registerWithThrowing = () => Assert.Throws<InvalidOperationException>(() =>
+            InvalidOperationException registerWithThrowing() => Assert.Throws<InvalidOperationException>(() =>
                 builder.UseLaunchDarkly(TestDomain, TestSdkKey, _ => throw expectedException));
 
             // Assert
