@@ -20,8 +20,22 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="builder">The <see cref="OpenFeatureBuilder"/> instance to configure.</param>
         /// <param name="configuration">A pre-built LaunchDarkly <see cref="Configuration"/>.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the <paramref name="configuration"/> argument is <c>null</c>.
+        /// </exception>
         public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, Configuration configuration)
-            => RegisterLaunchDarklyProvider(builder, () => CreateConfiguration(configuration), sp => sp.GetRequiredService<Configuration>());
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
+            }
+
+            return RegisterLaunchDarklyProvider(
+                builder, 
+                () => configuration, 
+                sp => sp.GetRequiredService<Configuration>()
+            );
+        }
 
         /// <summary>
         /// Configures the <see cref="OpenFeatureBuilder"/> to use LaunchDarkly as a domain-scoped provider
@@ -31,12 +45,23 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="domain">A domain identifier (e.g., tenant or environment).</param>
         /// <param name="configuration">A pre-built LaunchDarkly <see cref="Configuration"/> specific to the domain.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the <paramref name="configuration"/> argument is <c>null</c>.
+        /// </exception>
         public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string domain, Configuration configuration)
-            => RegisterLaunchDarklyProviderForDomain(
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
+            }
+
+            return RegisterLaunchDarklyProviderForDomain(
                 builder,
                 domain,
-                () => CreateConfiguration(configuration),
-                (sp, key) => sp.GetRequiredKeyedService<Configuration>(key));
+                () => configuration,
+                (sp, key) => sp.GetRequiredKeyedService<Configuration>(key)
+            );
+        }
 
         /// <summary>
         /// Configures the <see cref="OpenFeatureBuilder"/> to use LaunchDarkly as the default provider
@@ -119,17 +144,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
 
             // Register the domain-scoped provider instance.
             return builder.AddProvider(domain, (serviceProvider, key) => new Provider(resolveConfiguration(serviceProvider, key)));
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="Configuration"/> by cloning the specified instance and rebuilding it.
-        /// </summary>
-        /// <param name="configuration">An existing <see cref="Configuration"/> instance.</param>
-        /// <returns>A rebuilt <see cref="Configuration"/> instance.</returns>
-        private static Configuration CreateConfiguration(Configuration configuration)
-        {
-            var configBuilder = Configuration.Builder(configuration);
-            return configBuilder.Build();
         }
 
         /// <summary>

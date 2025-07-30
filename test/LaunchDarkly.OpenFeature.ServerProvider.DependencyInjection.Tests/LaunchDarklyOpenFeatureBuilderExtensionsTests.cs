@@ -351,7 +351,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
         }
 
         [Fact]
-        public void UseLaunchDarklyWithSdkKeyAndNullDelegate_WhenNullConfigurationPassed_ShouldThrowNullReferenceException()
+        public void UseLaunchDarklyWithSdkKeyAndNullDelegate_WhenNullConfigurationPassed_ShouldThrowArgumentNullException()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -361,7 +361,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection.Tests
             Configuration configuration = null;
 
             // Assert
-            Assert.Throws<NullReferenceException>(() => builder.UseLaunchDarkly(TestSdkKey, configuration));
+            Assert.Throws<ArgumentNullException>(() => builder.UseLaunchDarkly(TestSdkKey, configuration));
         }
 
         [Theory]
