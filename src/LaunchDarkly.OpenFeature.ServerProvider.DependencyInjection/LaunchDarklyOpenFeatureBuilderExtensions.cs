@@ -68,11 +68,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// using the specified SDK key and optional configuration delegate.
         /// </summary>
         /// <param name="builder">The <see cref="OpenFeatureBuilder"/> instance to configure.</param>
-        /// <param name="stdKey">The SDK key used to initialize the LaunchDarkly configuration.</param>
+        /// <param name="sdkKey">The SDK key used to initialize the LaunchDarkly configuration.</param>
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
-        public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string stdKey, Action<ConfigurationBuilder> configure = null)
-            => RegisterLaunchDarklyProvider(builder, () => CreateConfiguration(stdKey, configure), sp => sp.GetRequiredService<Configuration>());
+        public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string sdkKey, Action<ConfigurationBuilder> configure = null)
+            => RegisterLaunchDarklyProvider(builder, () => CreateConfiguration(sdkKey, configure), sp => sp.GetRequiredService<Configuration>());
 
         /// <summary>
         /// Configures the <see cref="OpenFeatureBuilder"/> to use LaunchDarkly as a domain-scoped provider
@@ -80,14 +80,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="OpenFeatureBuilder"/> instance to configure.</param>
         /// <param name="domain">A domain identifier (e.g., tenant or environment).</param>
-        /// <param name="stdKey">The SDK key used to initialize the LaunchDarkly configuration.</param>
+        /// <param name="sdkKey">The SDK key used to initialize the LaunchDarkly configuration.</param>
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
-        public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string domain, string stdKey, Action<ConfigurationBuilder> configure = null)
+        public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string domain, string sdkKey, Action<ConfigurationBuilder> configure = null)
             => RegisterLaunchDarklyProviderForDomain(
                 builder,
                 domain,
-                () => CreateConfiguration(stdKey, configure),
+                () => CreateConfiguration(sdkKey, configure),
                 (sp, key) => sp.GetRequiredKeyedService<Configuration>(key));
 
         /// <summary>
@@ -149,12 +149,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <summary>
         /// Creates a new <see cref="Configuration"/> using the specified SDK key and optional configuration delegate.
         /// </summary>
-        /// <param name="stdKey">The SDK key used to initialize the configuration.</param>
+        /// <param name="sdkKey">The SDK key used to initialize the configuration.</param>
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>A fully constructed <see cref="Configuration"/> instance.</returns>
         private static Configuration CreateConfiguration(string sdkKey, Action<ConfigurationBuilder> configure = null)
         {
-            var configBuilder = Configuration.Builder(stdKey);
+            var configBuilder = Configuration.Builder(sdkKey);
             configure?.Invoke(configBuilder);
             return configBuilder.Build();
         }
