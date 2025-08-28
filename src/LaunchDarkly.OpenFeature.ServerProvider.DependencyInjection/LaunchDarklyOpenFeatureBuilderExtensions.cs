@@ -152,7 +152,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="stdKey">The SDK key used to initialize the configuration.</param>
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>A fully constructed <see cref="Configuration"/> instance.</returns>
-        private static Configuration CreateConfiguration(string stdKey, Action<ConfigurationBuilder> configure = null)
+        private static Configuration CreateConfiguration(string sdkKey, Action<ConfigurationBuilder> configure = null)
         {
             var configBuilder = Configuration.Builder(stdKey);
             configure?.Invoke(configBuilder);
