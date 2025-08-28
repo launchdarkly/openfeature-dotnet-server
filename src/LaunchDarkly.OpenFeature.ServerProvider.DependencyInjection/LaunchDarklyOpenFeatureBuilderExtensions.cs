@@ -72,7 +72,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
         public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string sdkKey, Action<ConfigurationBuilder> configure = null)
-            => RegisterLaunchDarklyProvider(builder, () => CreateConfiguration(sdkKey, configure), sp => sp.GetRequiredService<Configuration>());
+            => RegisterLaunchDarklyProvider(
+                builder, 
+                () => CreateConfiguration(sdkKey, configure), 
+                sp => sp.GetRequiredService<Configuration>());
 
         /// <summary>
         /// Configures the <see cref="OpenFeatureBuilder"/> to use LaunchDarkly as a domain-scoped provider
