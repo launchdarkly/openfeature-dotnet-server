@@ -55,7 +55,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
             }
 
-            return RegisterLaunchDarklyProviderForDomain(
+            return RegisterLaunchDarklyProvider(
                 builder,
                 domain,
                 () => configuration,
@@ -84,7 +84,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="configure">An optional delegate to customize the <see cref="ConfigurationBuilder"/>.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
         public static OpenFeatureBuilder UseLaunchDarkly(this OpenFeatureBuilder builder, string domain, string sdkKey, Action<ConfigurationBuilder> configure = null)
-            => RegisterLaunchDarklyProviderForDomain(
+            => RegisterLaunchDarklyProvider(
                 builder,
                 domain,
                 () => CreateConfiguration(sdkKey, configure),
@@ -118,7 +118,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.DependencyInjection
         /// <param name="createConfiguration">A delegate that returns a domain-specific <see cref="Configuration"/> instance.</param>
         /// <param name="resolveConfiguration">A delegate that resolves the domain-scoped <see cref="Configuration"/> from the service provider.</param>
         /// <returns>The updated <see cref="OpenFeatureBuilder"/> instance.</returns>
-        private static OpenFeatureBuilder RegisterLaunchDarklyProviderForDomain(
+        private static OpenFeatureBuilder RegisterLaunchDarklyProvider(
             OpenFeatureBuilder builder,
             string domain,
             Func<Configuration> createConfiguration,
