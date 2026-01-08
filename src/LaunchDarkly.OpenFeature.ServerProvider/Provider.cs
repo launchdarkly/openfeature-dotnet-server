@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
-using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using OpenFeature;
@@ -32,7 +31,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private readonly EvalContextConverter _contextConverter;
         private readonly StatusProvider _statusProvider;
 
-        private readonly AtomicBoolean _initializeCalled = new AtomicBoolean(false);
+        private readonly object _initLock = new object();
+        private bool _initializeCalled = false;
 
         // There is no support for void task completion, so we use bool as a dummy result type.
         private readonly TaskCompletionSource<bool> _initCompletion = new TaskCompletionSource<bool>();
@@ -130,9 +130,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <inheritdoc />
         public override Task InitializeAsync(EvaluationContext context, CancellationToken cancellationToken = default)
         {
-            if (_initializeCalled.GetAndSet(true))
+            lock (_initLock)
             {
-                return _initCompletion.Task;
+                if (_initializeCalled)
+                {
+                    return _initCompletion.Task;
+                }
+                _initializeCalled = true;
             }
 
             _client.FlagTracker.FlagChanged += FlagChangeHandler;
