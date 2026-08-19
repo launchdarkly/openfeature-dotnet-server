@@ -119,6 +119,39 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Thread.Sleep(100);
             Assert.Equal(1, errorCount);
         }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItCanEvaluateFlagsAfterTheDataSourceHasBeenShutdown()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mockClient.Setup(l => l.Initialized).Returns(true);
+            mockClient.Setup(l => l.BoolVariationDetail("the-flag", It.IsAny<Sdk.Context>(), false))
+                .Returns(new Sdk.EvaluationDetail<bool>(true, 10, Sdk.EvaluationReason.FallthroughReason));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Valid
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object);
+            await Api.Instance.SetProviderAsync(provider);
+
+            mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                mockDataSourceStatus.Object,
+                new DataSourceStatus { State = DataSourceState.Off });
+            Thread.Sleep(100);
+
+            var client = Api.Instance.GetClient();
+            Assert.True(await client.GetBooleanValueAsync("the-flag", false,
+                EvaluationContext.Builder().Set("targetingKey", "the-key").Build()));
+        }
 #endif
     }
 }

@@ -214,9 +214,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     break;
                 case DataSourceState.Off:
                 default:
-                    // If we had initialized every, then we could still initialize flags, but I think we need to let
-                    // a consumer know we have encountered an unrecoverable problem with the connection.
-                    _statusProvider.SetStatus(ProviderStatus.Fatal, ProviderShutdownMessage);
+                    // The status is an error, and not fatal, because the LaunchDarkly client can continue to
+                    // evaluate flags using the data it already has.
+                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
                     _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
                     break;
             }
