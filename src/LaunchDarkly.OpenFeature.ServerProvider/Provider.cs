@@ -56,7 +56,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given configuration.
         /// </summary>
         /// <param name="config">A client configuration object</param>
-        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)), config.StartWaitTime)
+        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)), InitTimeout(config))
         {
         }
 
@@ -182,20 +182,30 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         #endregion
 
+        /// <summary>
+        /// A start wait time of zero means the caller does not want to block on initialization at all, so the provider
+        /// waits indefinitely and leaves it to the caller to decide how long to wait.
+        /// </summary>
+        private static TimeSpan? InitTimeout(Configuration config) =>
+            config.StartWaitTime > TimeSpan.Zero ? config.StartWaitTime : (TimeSpan?)null;
+
         private void ScheduleInitTimeout(TimeSpan timeout)
         {
             var message = $"the provider did not become ready within {timeout.TotalMilliseconds}ms";
-            Task.Delay(timeout < TimeSpan.Zero ? TimeSpan.Zero : timeout).ContinueWith(_ =>
+            Task.Delay(timeout).ContinueWith(_ =>
             {
-                if (_initCompletion.Task.IsCompleted)
+                lock (_initLock)
                 {
-                    return;
-                }
+                    if (_initCompletion.Task.IsCompleted)
+                    {
+                        return;
+                    }
 
-                _logger.Warn(message);
-                // The client keeps trying to connect, so a later successful connection will emit a ready event.
-                _statusProvider.SetStatus(ProviderStatus.Error, message);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
+                    _logger.Warn(message);
+                    // The client keeps trying to connect, so a later successful connection will emit a ready event.
+                    _statusProvider.SetStatus(ProviderStatus.Error, message);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
+                }
             }).ConfigureAwait(false);
         }
 
@@ -228,8 +238,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 case DataSourceState.Initializing:
                     break;
                 case DataSourceState.Valid:
-                    _statusProvider.SetStatus(ProviderStatus.Ready);
-                    _initCompletion.TrySetResult(true);
+                    lock (_initLock)
+                    {
+                        _statusProvider.SetStatus(ProviderStatus.Ready);
+                        _initCompletion.TrySetResult(true);
+                    }
                     break;
                 case DataSourceState.Interrupted:
                     // The "ProviderStatus.Error" state says it is unable to evaluate flags. We can always evaluate

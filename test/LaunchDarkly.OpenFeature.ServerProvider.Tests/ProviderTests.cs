@@ -156,6 +156,21 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact(Timeout = 5000)]
+        public async Task ItDoesNotTimeOutInitializationWhenTheStartWaitTimeIsZero()
+        {
+            var provider = new Provider(Configuration.Builder("")
+                .DataSource(Components.ExternalUpdatesOnly)
+                .Events(Components.NoEvents)
+                .StartWaitTime(TimeSpan.Zero)
+                .Build());
+
+            var initialization = provider.InitializeAsync(EvaluationContext.Empty);
+            await Task.Delay(100);
+
+            Assert.False(initialization.IsFaulted);
+        }
+
+        [Fact(Timeout = 5000)]
         public async Task ItDoesNotTimeOutInitializationWhenTheClientBecomesReady()
         {
             var mockClient = new Mock<ILdClient>();
