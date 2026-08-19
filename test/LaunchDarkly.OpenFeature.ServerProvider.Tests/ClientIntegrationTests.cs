@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
@@ -151,6 +152,43 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var client = Api.Instance.GetClient();
             Assert.True(await client.GetBooleanValueAsync("the-flag", false,
                 EvaluationContext.Builder().Set("targetingKey", "the-key").Build()));
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItBecomesReadyAfterInitializationTimesOut()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object, TimeSpan.FromMilliseconds(50));
+
+            await Api.Instance.SetProviderAsync(provider);
+
+            // The handler is added after the failed initialization, otherwise it would be immediately invoked for
+            // the state of any previously registered provider.
+            var readyCount = 0;
+            Api.Instance.AddHandler(ProviderEventTypes.ProviderReady,
+                details => { Interlocked.Increment(ref readyCount); });
+
+            mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                mockDataSourceStatus.Object,
+                new DataSourceStatus { State = DataSourceState.Valid });
+
+            // The initialization timeout does not stop the client from connecting, so a later connection makes the
+            // provider ready.
+            Thread.Sleep(100);
+            Assert.Equal(1, readyCount);
         }
 #endif
     }

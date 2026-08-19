@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Timers;
@@ -127,6 +128,63 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
             Assert.NotNull(exception);
             Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItStopsWaitingForInitializationAfterTheStartWaitTime()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object, TimeSpan.FromMilliseconds(50));
+
+            var exception =
+                await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
+            Assert.NotNull(exception);
+            Assert.Equal("the provider did not become ready within 50ms", exception.Message);
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItDoesNotTimeOutInitializationWhenTheClientBecomesReady()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object, TimeSpan.FromMilliseconds(2000));
+
+            var completionTimer = new Timer(50);
+            completionTimer.AutoReset = false;
+            completionTimer.Elapsed += (sender, args) =>
+            {
+                mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                    mockDataSourceStatus.Object,
+                    new DataSourceStatus {State = DataSourceState.Valid});
+            };
+            completionTimer.Start();
+
+            await provider.InitializeAsync(EvaluationContext.Empty);
         }
 
         [Fact(Timeout = 5000)]
