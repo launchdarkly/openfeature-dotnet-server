@@ -160,6 +160,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var mockClient = new Mock<ILdClient>();
             mockClient.Setup(l => l.GetLogger())
                 .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mockClient.Setup(l => l.BoolVariationDetail("the-flag", It.IsAny<Sdk.Context>(), false))
+                .Returns(new Sdk.EvaluationDetail<bool>(true, 10, Sdk.EvaluationReason.FallthroughReason));
 
             var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
             mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
@@ -181,6 +183,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Api.Instance.AddHandler(ProviderEventTypes.ProviderReady,
                 details => { Interlocked.Increment(ref readyCount); });
 
+            var context = EvaluationContext.Builder().Set("targetingKey", "the-key").Build();
+
+            // A timed out initialization does not short-circuit evaluations.
+            Assert.True(await Api.Instance.GetClient().GetBooleanValueAsync("the-flag", false, context));
+
             mockDataSourceStatus.Raise(e => e.StatusChanged += null,
                 mockDataSourceStatus.Object,
                 new DataSourceStatus { State = DataSourceState.Valid });
@@ -189,6 +196,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             // provider ready.
             Thread.Sleep(100);
             Assert.Equal(1, readyCount);
+            Assert.True(await Api.Instance.GetClient().GetBooleanValueAsync("the-flag", false, context));
         }
 #endif
     }
