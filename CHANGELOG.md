@@ -2,6 +2,18 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.2.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.2...2.2.0) (2026-08-20)
+
+
+### Features
+
+* Stop waiting for initialization after the configured start wait time ([#60](https://github.com/launchdarkly/openfeature-dotnet-server/issues/60)) ([86e3d27](https://github.com/launchdarkly/openfeature-dotnet-server/commit/86e3d2720790dc0d9efa2971ab9e742d7cea75cd))
+
+
+### Bug Fixes
+
+* Do not report a permanent data source failure as fatal ([#59](https://github.com/launchdarkly/openfeature-dotnet-server/issues/59)) ([ed29935](https://github.com/launchdarkly/openfeature-dotnet-server/commit/ed2993513380a06043cb1d32554266c54ed26720))
+
 ## [2.1.2](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.1...2.1.2) (2026-01-08)
 
 
