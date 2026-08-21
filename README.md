@@ -147,6 +147,24 @@ var evaluationContext = EvaluationContext.Builder()
   .Build();
 ```
 
+### Flag Metadata
+
+Evaluations include flag metadata for the LaunchDarkly specific parts of the evaluation result which have no OpenFeature equivalent. Each entry is absent when it does not apply to the evaluation.
+
+| Key                 | Type    | Description                                                            |
+|---------------------|---------|------------------------------------------------------------------------|
+| `variationIndex`    | integer | The index of the returned variation. Absent for default values.         |
+| `inExperiment`      | boolean | Present, and `true`, when the evaluation was part of an experiment.     |
+| `ruleIndex`         | integer | The index of the rule that matched.                                    |
+| `ruleId`            | string  | The identifier of the rule that matched.                               |
+| `prerequisiteKey`   | string  | The key of the prerequisite flag that failed.                           |
+| `bigSegmentsStatus` | string  | The status of the Big Segments query made during the evaluation.        |
+
+```csharp
+var details = await client.GetBooleanDetailsAsync("my-flag", false, evaluationContext);
+var inExperiment = details.FlagMetadata.GetBool("inExperiment") ?? false;
+```
+
 ### Advanced Usage
 
 #### Asynchronous Initialization
