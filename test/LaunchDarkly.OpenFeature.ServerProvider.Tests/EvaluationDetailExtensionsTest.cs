@@ -134,7 +134,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var resolutionDetail = new EvaluationDetail<bool>(true, 10,
                     EvaluationReason.FallthroughReason.WithBigSegmentsStatus(BigSegmentsStatus.Stale))
                 .ToResolutionDetails("test-flag");
-            Assert.Equal("Stale", resolutionDetail.FlagMetadata.GetString("bigSegmentsStatus"));
+            Assert.Equal("STALE", resolutionDetail.FlagMetadata.GetString("bigSegmentsStatus"));
         }
 
         [Fact]

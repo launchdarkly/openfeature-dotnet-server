@@ -48,6 +48,30 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
         
         /// <summary>
+        /// Convert a <see cref="BigSegmentsStatus"/> into a string identifier.
+        /// This string identifier is the same as we would use in a JSON representation.
+        /// </summary>
+        /// <param name="value">The value to convert</param>
+        /// <returns>The value as a string</returns>
+        /// <exception cref="ArgumentException">Thrown if the status is unsupported.</exception>
+        private static string ToIdentifier(this BigSegmentsStatus value)
+        {
+            switch (value)
+            {
+                case BigSegmentsStatus.Healthy:
+                    return "HEALTHY";
+                case BigSegmentsStatus.Stale:
+                    return "STALE";
+                case BigSegmentsStatus.NotConfigured:
+                    return "NOT_CONFIGURED";
+                case BigSegmentsStatus.StoreError:
+                    return "STORE_ERROR";
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        /// <summary>
         /// Convert the LaunchDarkly specific parts of an evaluation into OpenFeature flag metadata.
         /// </summary>
         /// <param name="reason">The reason for the evaluation result</param>
@@ -78,7 +102,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
             if (reason.BigSegmentsStatus.HasValue)
             {
-                metadata[BigSegmentsStatusKey] = reason.BigSegmentsStatus.Value.ToString();
+                metadata[BigSegmentsStatusKey] = reason.BigSegmentsStatus.Value.ToIdentifier();
             }
 
             return new ImmutableMetadata(metadata);
