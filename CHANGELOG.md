@@ -2,6 +2,13 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.2.0...2.3.0) (2026-08-25)
+
+
+### Features
+
+* Populate OpenFeature flag metadata from the evaluation reason ([#61](https://github.com/launchdarkly/openfeature-dotnet-server/issues/61)) ([1081b79](https://github.com/launchdarkly/openfeature-dotnet-server/commit/1081b791a06e18a2dbe09bd6ea8dcf99aa0fabe9))
+
 ## [2.2.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.2...2.2.0) (2026-08-20)
 
 
