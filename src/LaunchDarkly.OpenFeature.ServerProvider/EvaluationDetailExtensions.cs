@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LaunchDarkly.Sdk;
 using OpenFeature.Constant;
 using OpenFeature.Model;
@@ -11,6 +12,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
     /// </summary>
     internal static class EvaluationDetailExtensions
     {
+        private const string VariationIndexKey = "variationIndex";
+        private const string InExperimentKey = "inExperiment";
+        private const string RuleIndexKey = "ruleIndex";
+        private const string RuleIdKey = "ruleId";
+        private const string PrerequisiteKeyKey = "prerequisiteKey";
+        private const string BigSegmentsStatusKey = "bigSegmentsStatus";
+
         /// <summary>
         /// Convert an <see cref="EvaluationReasonKind"/> into a string identifier.
         /// This string identifier is the same as we would use in a JSON representation.
@@ -40,6 +48,67 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
         
         /// <summary>
+        /// Convert a <see cref="BigSegmentsStatus"/> into a string identifier.
+        /// This string identifier is the same as we would use in a JSON representation.
+        /// </summary>
+        /// <param name="value">The value to convert</param>
+        /// <returns>The value as a string</returns>
+        /// <exception cref="ArgumentException">Thrown if the status is unsupported.</exception>
+        private static string ToIdentifier(this BigSegmentsStatus value)
+        {
+            switch (value)
+            {
+                case BigSegmentsStatus.Healthy:
+                    return "HEALTHY";
+                case BigSegmentsStatus.Stale:
+                    return "STALE";
+                case BigSegmentsStatus.NotConfigured:
+                    return "NOT_CONFIGURED";
+                case BigSegmentsStatus.StoreError:
+                    return "STORE_ERROR";
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        /// <summary>
+        /// Convert the LaunchDarkly specific parts of an evaluation into OpenFeature flag metadata.
+        /// </summary>
+        /// <param name="reason">The reason for the evaluation result</param>
+        /// <param name="variationIndex">The index of the returned variation, if there was one</param>
+        /// <returns>The flag metadata for the evaluation</returns>
+        private static ImmutableMetadata ToFlagMetadata(this EvaluationReason reason, int? variationIndex)
+        {
+            var metadata = new Dictionary<string, object>();
+            if (variationIndex.HasValue)
+            {
+                metadata[VariationIndexKey] = variationIndex.Value;
+            }
+            if (reason.InExperiment)
+            {
+                metadata[InExperimentKey] = true;
+            }
+            if (reason.RuleIndex.HasValue)
+            {
+                metadata[RuleIndexKey] = reason.RuleIndex.Value;
+            }
+            if (reason.RuleId != null)
+            {
+                metadata[RuleIdKey] = reason.RuleId;
+            }
+            if (reason.PrerequisiteKey != null)
+            {
+                metadata[PrerequisiteKeyKey] = reason.PrerequisiteKey;
+            }
+            if (reason.BigSegmentsStatus.HasValue)
+            {
+                metadata[BigSegmentsStatusKey] = reason.BigSegmentsStatus.Value.ToIdentifier();
+            }
+
+            return new ImmutableMetadata(metadata);
+        }
+
+        /// <summary>
         /// Convert an <see cref="EvaluationDetail{T}"/> to a <see cref="ResolutionDetails{T}"/>.
         /// </summary>
         /// <param name="detail">The detail to convert</param>
@@ -52,7 +121,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             if (detail.Reason.Kind != EvaluationReasonKind.Error)
             {
                 return new ResolutionDetails<T>(flagKey, detail.Value, ErrorType.None,
-                    reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString());
+                    reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString(),
+                    flagMetadata: detail.Reason.ToFlagMetadata(detail.VariationIndex));
             }
 
             var errorType = ErrorType.General;
@@ -82,7 +152,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             }
 
             return new ResolutionDetails<T>(flagKey, detail.Value, errorType,
-                reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString());
+                reason: detail.Reason.Kind.ToIdentifier(), variant: detail.VariationIndex?.ToString(),
+                flagMetadata: detail.Reason.ToFlagMetadata(detail.VariationIndex));
         }
 
         /// <summary>
