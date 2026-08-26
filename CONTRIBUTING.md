@@ -36,9 +36,17 @@ Or, to build for only one target framework (in this example, .NET Standard 2.0):
 dotnet build src/LaunchDarkly.OpenFeature.ServerProvider -f netstandard2.0
 ```
 
+The dependency injection and hosting support is a separate package, `src/LaunchDarkly.OpenFeature.ServerProvider.Hosting`, which is versioned and released together with the provider. Dependencies used only by that integration belong there, so that the provider package remains usable without them.
+
 ### Testing
 
 To run all unit tests:
+
+```bash
+dotnet test
+```
+
+Or, to run the tests for a single project:
 
 ```bash
 dotnet test test/LaunchDarkly.OpenFeature.ServerProvider.Tests/LaunchDarkly.OpenFeature.ServerProvider.Tests.csproj

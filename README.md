@@ -51,6 +51,54 @@ Refer to the [SDK reference guide](https://docs.launchdarkly.com/sdk/server-side
 
 For information on using the OpenFeature client please refer to the [OpenFeature Documentation](https://docs.openfeature.dev/docs/reference/concepts/evaluation-api/).
 
+### Dependency injection
+
+Support for the OpenFeature dependency injection and hosting integration is in a separate package, so that applications which do not use dependency injection do not take a dependency on `Microsoft.Extensions.*`.
+
+```bash
+dotnet add package LaunchDarkly.OpenFeature.ServerProvider.Hosting
+```
+
+```csharp
+using LaunchDarkly.OpenFeature.ServerProvider.Hosting;
+
+builder.Services.AddOpenFeature(openFeature => openFeature
+    .AddLaunchDarklyProvider(options =>
+    {
+        options.SdkKey = "my-sdk-key";
+        options.ConfigureSdk = config => config.StartWaitTime(TimeSpan.FromSeconds(10));
+    }));
+```
+
+Injected `IFeatureClient` instances then evaluate flags using LaunchDarkly, and the provider is initialized and shut down with the host.
+
+The `ILdClient` used by the provider is also registered, for use-cases that OpenFeature does not support such as migration flags and track events:
+
+```csharp
+public class MyService
+{
+    public MyService(IFeatureClient featureClient, ILdClient ldClient) { }
+}
+```
+
+Providers may also be registered for a specific OpenFeature domain, in which case the `ILdClient` for that provider is registered as a keyed service using the domain as the key:
+
+```csharp
+builder.Services.AddOpenFeature(openFeature => openFeature
+    .AddLaunchDarklyProvider("beta", options => options.SdkKey = "my-sdk-key"));
+```
+
+```csharp
+public class MyService
+{
+    public MyService([FromKeyedServices("beta")] ILdClient ldClient) { }
+}
+```
+
+Each registration uses a single provider, and therefore a single `ILdClient`, no matter how many times it is resolved.
+
+The OpenFeature dependency injection integration does not use `OpenFeature.Api.Instance`, so a provider registered this way is not visible to code which evaluates flags using that global instance.
+
 ## OpenFeature Specific Considerations
 
 LaunchDarkly evaluates contexts, and it can either evaluate a single-context, or a multi-context. When using OpenFeature both single and multi-contexts must be encoded into a single `EvaluationContext`. This is accomplished by looking for an attribute named `kind` in the `EvaluationContext`.

@@ -25,6 +25,7 @@ runs:
       run: |
         dotnet restore
         dotnet pack --no-build --output nupkgs --configuration Release src/LaunchDarkly.OpenFeature.ServerProvider/LaunchDarkly.OpenFeature.ServerProvider.csproj
+        dotnet pack --no-build --output nupkgs --configuration Release src/LaunchDarkly.OpenFeature.ServerProvider.Hosting/LaunchDarkly.OpenFeature.ServerProvider.Hosting.csproj
 
     - name: Publish Package
       if: ${{ inputs.dry_run == 'false' }}

@@ -16,4 +16,6 @@ runs:
     - name: Build
       shell: bash
       # For a release we do not want to build the test project. The internals are not visible in release and it will fail.
-      run: dotnet build /p:Configuration=Release ./src/LaunchDarkly.OpenFeature.ServerProvider/LaunchDarkly.OpenFeature.ServerProvider.csproj
+      run: |
+        dotnet build /p:Configuration=Release ./src/LaunchDarkly.OpenFeature.ServerProvider/LaunchDarkly.OpenFeature.ServerProvider.csproj
+        dotnet build /p:Configuration=Release ./src/LaunchDarkly.OpenFeature.ServerProvider.Hosting/LaunchDarkly.OpenFeature.ServerProvider.Hosting.csproj
