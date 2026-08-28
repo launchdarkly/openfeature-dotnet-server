@@ -32,7 +32,7 @@ This matrix mirrors the [feature matrix of the OpenFeature SDK for .NET](https:/
 | ✅      | Logging                             | The provider logs through the logging configuration of the `Configuration` it is given.                                                                                                                                   |
 | ✅      | Domains                             | Domains bind clients to providers in the OpenFeature SDK; a separate provider instance may be registered per domain.                                                                                                       |
 | ✅      | Eventing                            | LaunchDarkly data source status changes are emitted as `PROVIDER_READY`, `PROVIDER_STALE`, and `PROVIDER_ERROR`. Flag changes are emitted as `PROVIDER_CONFIGURATION_CHANGED` with the changed flag key.                    |
-| ✅      | Initialization                      | `InitializeAsync` waits for the LaunchDarkly client, using the configured `StartWaitTime` as the timeout when it is greater than zero.                                                                                     |
+| ✅      | Initialization                      | A `StartWaitTime` greater than zero bounds the whole of initialization: the provider constructor blocks for up to that long and `InitializeAsync` then completes with the outcome. A zero `StartWaitTime` waits indefinitely. |
 | ✅      | Shutdown                            | `ShutdownAsync` closes the LaunchDarkly client. A closed client cannot be restarted, so a new provider instance is required afterward.                                                                                     |
 | ✅      | Transaction Context Propagation     | Provided by the OpenFeature SDK, which merges the transaction context into the evaluation context before the provider is called; no provider support is required.                                                          |
 | ✅      | Extending                           | The underlying LaunchDarkly client is available through `GetClient()` for functionality with no OpenFeature equivalent.                                                                                                    |
@@ -192,7 +192,9 @@ var inExperiment = details.FlagMetadata.GetBool("inExperiment") ?? false;
 
 #### Asynchronous Initialization
 
-The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
+The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. Because the provider constructor has already waited that long, `InitializeAsync` does not wait again: it completes as soon as it is called, failing if the client did not become ready within the start wait time. The client keeps connecting after that, so a later successful connection still emits a ready event.
+
+If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
 
 ```csharp
 var config = Configuration.Builder("my-sdk-key")
