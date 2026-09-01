@@ -41,11 +41,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private const string ProviderShutdownMessage =
             "the provider has encountered a permanent error or been shutdown";
 
-        private readonly TimeSpan? _startWait;
-
-        internal Provider(ILdClient client, TimeSpan? startWait = null)
+        internal Provider(ILdClient client)
         {
-            _startWait = startWait;
             _client = client;
             _logger = _client.GetLogger().SubLogger(NameSpace);
             _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger);
@@ -56,7 +53,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given configuration.
         /// </summary>
         /// <param name="config">A client configuration object</param>
-        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)), StartWait(config))
+        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)))
         {
         }
 
@@ -64,7 +61,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given SDK key.
         /// </summary>
         /// <param name="sdkKey">The SDK key</param>
-        public Provider(string sdkKey) : this(Configuration.Builder(sdkKey).Build())
+        public Provider(string sdkKey) : this(new LdClient(WrapConfig(Configuration.Builder(sdkKey).Build())))
         {
         }
 
@@ -162,11 +159,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
             }
 
-            if (_startWait.HasValue)
-            {
-                FailInitializationIfNotReady(_startWait.Value);
-            }
-
             return _initCompletion.Task;
         }
 
@@ -181,31 +173,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         #endregion
-
-        /// <summary>
-        /// A start wait time of zero means the caller does not want to block on initialization at all, so the provider
-        /// waits indefinitely and leaves it to the caller to decide how long to wait.
-        /// </summary>
-        private static TimeSpan? StartWait(Configuration config) =>
-            config.StartWaitTime > TimeSpan.Zero ? config.StartWaitTime : (TimeSpan?)null;
-
-        private void FailInitializationIfNotReady(TimeSpan startWait)
-        {
-            lock (_initLock)
-            {
-                if (_initCompletion.Task.IsCompleted)
-                {
-                    return;
-                }
-
-                var message = $"the client did not become ready within the {startWait.TotalMilliseconds}ms start " +
-                              "wait time";
-                _logger.Warn(message);
-                // The client keeps trying to connect, so a later successful connection will emit a ready event.
-                _statusProvider.SetStatus(ProviderStatus.Error, message);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
-            }
-        }
 
         private void FlagChangeHandler(object sender, FlagChangeEvent changeEvent)
         {
@@ -236,11 +203,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 case DataSourceState.Initializing:
                     break;
                 case DataSourceState.Valid:
-                    lock (_initLock)
-                    {
-                        _statusProvider.SetStatus(ProviderStatus.Ready);
-                        _initCompletion.TrySetResult(true);
-                    }
+                    _statusProvider.SetStatus(ProviderStatus.Ready);
+                    _initCompletion.TrySetResult(true);
                     break;
                 case DataSourceState.Interrupted:
                     // The "ProviderStatus.Error" state says it is unable to evaluate flags. We can always evaluate
