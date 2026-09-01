@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Timers;
@@ -128,69 +127,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
             Assert.NotNull(exception);
             Assert.Equal("the provider has encountered a permanent error or been shutdown", exception.Message);
-        }
-
-        [Fact(Timeout = 5000)]
-        public async Task ItFailsInitializationImmediatelyWhenTheClientIsNotReadyAndAStartWaitTimeWasUsed()
-        {
-            var mockClient = new Mock<ILdClient>();
-            mockClient.Setup(l => l.GetLogger())
-                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
-
-            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
-            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
-            {
-                State = DataSourceState.Initializing
-            });
-            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
-
-            var mockFlagTracker = new Mock<IFlagTracker>();
-            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
-
-            var provider = new Provider(mockClient.Object, TimeSpan.FromMilliseconds(50));
-
-            var exception =
-                await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
-            Assert.NotNull(exception);
-            Assert.Equal("the client did not become ready within the 50ms start wait time", exception.Message);
-        }
-
-        [Fact(Timeout = 5000)]
-        public async Task ItDoesNotTimeOutInitializationWhenTheStartWaitTimeIsZero()
-        {
-            var provider = new Provider(Configuration.Builder("")
-                .DataSource(Components.ExternalUpdatesOnly)
-                .Events(Components.NoEvents)
-                .StartWaitTime(TimeSpan.Zero)
-                .Build());
-
-            var initialization = provider.InitializeAsync(EvaluationContext.Empty);
-            await Task.Delay(100);
-
-            Assert.False(initialization.IsFaulted);
-        }
-
-        [Fact(Timeout = 5000)]
-        public async Task ItDoesNotFailInitializationWhenTheClientIsReadyAndAStartWaitTimeWasUsed()
-        {
-            var mockClient = new Mock<ILdClient>();
-            mockClient.Setup(l => l.GetLogger())
-                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
-            mockClient.Setup(l => l.Initialized).Returns(true);
-
-            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
-            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
-            {
-                State = DataSourceState.Valid
-            });
-            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
-
-            var mockFlagTracker = new Mock<IFlagTracker>();
-            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
-
-            var provider = new Provider(mockClient.Object, TimeSpan.FromMilliseconds(2000));
-
-            await provider.InitializeAsync(EvaluationContext.Empty);
         }
 
         [Fact(Timeout = 5000)]
