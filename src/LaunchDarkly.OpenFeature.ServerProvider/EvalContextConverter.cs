@@ -86,6 +86,39 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <summary>
+        /// Extract private attributes and log an error if they are not a list of strings.
+        /// </summary>
+        /// <param name="value">The value to extract</param>
+        /// <param name="builder">The context builder to add the private attributes to</param>
+        private void ExtractPrivateAttributes(LdValue value, ContextBuilder builder)
+        {
+            if (value.IsNull)
+            {
+                // Ignore null values.
+                return;
+            }
+
+            if (value.Type != LdValueType.Array)
+            {
+                _log.Error(InvalidTypeMessage("privateAttributes", "array"));
+                return;
+            }
+
+            var items = value.AsList(LdValue.Convert.Json);
+            var privateAttributes = items.Where(item => item.IsString).Select(item => item.AsString).ToArray();
+
+            if (privateAttributes.Length != items.Count)
+            {
+                _log.Error("'privateAttributes' must be an array of only string values");
+            }
+
+            if (privateAttributes.Length != 0)
+            {
+                builder.Private(privateAttributes);
+            }
+        }
+
+        /// <summary>
         /// Extract a value and add it to a context builder.
         /// </summary>
         /// <param name="key">The key to add to the context if the value can be extracted</param>
@@ -108,7 +141,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     Extract(key, ldValue, builder.Anonymous);
                     break;
                 case "privateAttributes":
-                    builder.Private(ldValue.AsList(LdValue.Convert.String).ToArray());
+                    ExtractPrivateAttributes(ldValue, builder);
                     break;
                 default:
                     // Was not a built-in attribute.
