@@ -134,7 +134,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             {
                 if (_initializeCalled)
                 {
-                    return _initCompletion.Task;
+                    return WaitForInitializationAsync(cancellationToken);
                 }
                 _initializeCalled = true;
             }
@@ -159,7 +159,23 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
             }
 
-            return _initCompletion.Task;
+            return WaitForInitializationAsync(cancellationToken);
+        }
+
+        private async Task WaitForInitializationAsync(CancellationToken cancellationToken)
+        {
+            if (!cancellationToken.CanBeCanceled)
+            {
+                await _initCompletion.Task.ConfigureAwait(false);
+                return;
+            }
+
+            var cancellation = new TaskCompletionSource<bool>();
+            using (cancellationToken.Register(() => cancellation.TrySetCanceled(cancellationToken)))
+            {
+                var completed = await Task.WhenAny(_initCompletion.Task, cancellation.Task).ConfigureAwait(false);
+                await completed.ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
