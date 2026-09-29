@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Timers;
@@ -6,6 +7,7 @@ using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
+using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
 using LaunchDarkly.Sdk.Server.Integrations;
@@ -81,6 +83,95 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             completionTimer.Start();
 
             await provider.InitializeAsync(EvaluationContext.Empty);
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItStopsWaitingForInitializationWhenTheTokenIsCanceled()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object);
+
+            using (var cancellation = new System.Threading.CancellationTokenSource(100))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => provider.InitializeAsync(EvaluationContext.Empty, cancellation.Token));
+            }
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItStopsWaitingForAnInProgressInitializationWhenTheTokenIsCanceled()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object);
+
+            var firstInitialization = provider.InitializeAsync(EvaluationContext.Empty);
+
+            using (var cancellation = new System.Threading.CancellationTokenSource(100))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => provider.InitializeAsync(EvaluationContext.Empty, cancellation.Token));
+            }
+
+            Assert.False(firstInitialization.IsCompleted);
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItEmitsAReadyEventAfterACanceledInitializationWait()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Initializing
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object);
+
+            using (var cancellation = new System.Threading.CancellationTokenSource(100))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => provider.InitializeAsync(EvaluationContext.Empty, cancellation.Token));
+            }
+
+            mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                mockDataSourceStatus.Object,
+                new DataSourceStatus {State = DataSourceState.Valid});
+
+            var readyEvent = await provider.GetEventChannel().Reader.ReadAsync() as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, readyEvent?.Type);
         }
 
         [Fact(Timeout = 5000)]
