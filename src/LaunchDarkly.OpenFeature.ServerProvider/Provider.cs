@@ -174,6 +174,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             using (cancellationToken.Register(() => cancellation.TrySetCanceled(cancellationToken)))
             {
                 var completed = await Task.WhenAny(_initCompletion.Task, cancellation.Task).ConfigureAwait(false);
+                if (completed != _initCompletion.Task)
+                {
+                    // The OpenFeature SDK reports the cancellation as the initialization outcome, so any later
+                    // status change is a new event which must be emitted.
+                    _statusProvider.MarkStartupEventEmitted();
+                }
+
                 await completed.ConfigureAwait(false);
             }
         }

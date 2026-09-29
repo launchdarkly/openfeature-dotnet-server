@@ -53,6 +53,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 }
             }
 
+            /// <summary>
+            /// Records that the startup event has already been accounted for, so the next status change is emitted
+            /// instead of being suppressed as a duplicate of it.
+            /// </summary>
+            public void MarkStartupEventEmitted()
+            {
+                lock (_statusLock)
+                {
+                    _firstEvent = false;
+                }
+            }
+
             public void SetStatus(ProviderStatus status, string message = null)
             {
                 lock (_statusLock)
