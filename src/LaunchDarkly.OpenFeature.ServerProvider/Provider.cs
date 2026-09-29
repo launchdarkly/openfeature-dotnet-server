@@ -54,7 +54,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             _client = client;
             _waitIndefinitely = waitIndefinitely;
             _logger = _client.GetLogger().SubLogger(NameSpace);
-            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger);
+            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger,
+                () => _initCompletion.Task.IsCompleted);
             _contextConverter = new EvalContextConverter(_logger);
         }
 

@@ -7,6 +7,7 @@ using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
+using OpenFeature.Constant;
 using OpenFeature.Model;
 using Xunit;
 using LaunchDarkly.Sdk.Server.Integrations;
@@ -110,6 +111,22 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 new DataSourceStatus {State = DataSourceState.Valid});
 
             await initialization;
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task ItReportsBecomingReadyAfterInitializationFailed()
+        {
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            var provider = new Provider(MakeNotReadyClient(mockDataSourceStatus).Object, false);
+
+            await Record.ExceptionAsync(async () => await provider.InitializeAsync(EvaluationContext.Empty));
+
+            mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                mockDataSourceStatus.Object,
+                new DataSourceStatus {State = DataSourceState.Valid});
+
+            var payload = await provider.GetEventChannel().Reader.ReadAsync() as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderReady, payload?.Type);
         }
 
         [Fact(Timeout = 5000)]
