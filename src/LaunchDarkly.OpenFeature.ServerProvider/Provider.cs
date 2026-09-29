@@ -197,8 +197,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
             }
 
-            if (!_waitIndefinitely)
+            if (!_waitIndefinitely && !_initCompletion.Task.IsCompleted)
             {
+                // The OpenFeature client emits an error event when initialization fails, so the status is recorded
+                // here, before initialization completes, without emitting an event of our own.
+                _statusProvider.SetStatus(ProviderStatus.Error, ProviderNotReadyMessage);
                 _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderNotReadyMessage));
             }
 
