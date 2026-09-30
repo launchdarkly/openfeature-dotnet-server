@@ -215,7 +215,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 
             Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
             Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
-                "'privateAttributes' must be an array of only string values"));
+                "'privateAttributes' must be an array of only string values. The non-string" +
+                " values have been dropped and the remaining values have been applied."));
         }
 
         [Fact]

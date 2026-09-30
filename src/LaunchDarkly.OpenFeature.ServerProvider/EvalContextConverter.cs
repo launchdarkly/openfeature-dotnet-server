@@ -109,7 +109,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
             if (privateAttributes.Length != items.Count)
             {
-                _log.Error("'privateAttributes' must be an array of only string values");
+                _log.Error("'privateAttributes' must be an array of only string values. The non-string" +
+                           " values have been dropped and the remaining values have been applied.");
             }
 
             if (privateAttributes.Length != 0)
