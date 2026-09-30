@@ -153,10 +153,12 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 _initCompletion.TrySetResult(true);
             }
 
-            if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
+            var dataSourceStatus = _client.DataSourceStatusProvider.Status;
+            if (dataSourceStatus.State == DataSourceState.Off)
             {
-                _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                var message = DescribeLastError(dataSourceStatus, ProviderShutdownMessage);
+                _statusProvider.SetStatus(ProviderStatus.Error, message);
+                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
             }
 
             return _initCompletion.Task;
@@ -210,16 +212,27 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     // The "ProviderStatus.Error" state says it is unable to evaluate flags. We can always evaluate
                     // flags.
                     _statusProvider.SetStatus(ProviderStatus.Stale,
-                        status.LastError?.Message ?? "encountered an unknown error");
+                        DescribeLastError(status, "encountered an unknown error"));
                     break;
                 case DataSourceState.Off:
                 default:
                     // The status is an error, and not fatal, because the LaunchDarkly client can continue to
                     // evaluate flags using the data it already has.
-                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
-                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                    var message = DescribeLastError(status, ProviderShutdownMessage);
+                    _statusProvider.SetStatus(ProviderStatus.Error, message);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
                     break;
             }
+        }
+
+        private static string DescribeLastError(DataSourceStatus status, string fallback)
+        {
+            if (status.LastError is DataSourceStatus.ErrorInfo lastError)
+            {
+                return lastError.Message ?? lastError.ToString();
+            }
+
+            return fallback;
         }
 
         /// <inheritdoc />
