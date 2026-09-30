@@ -36,6 +36,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     payload.Message = message;
                 }
 
+                if (type == ProviderEventTypes.ProviderError)
+                {
+                    payload.ErrorType = ErrorType.General;
+                }
+
                 // Trigger the task do run, but don't wait for it. We wrap the exceptions inside SafeWrite,
                 // so we aren't going to have unexpected exceptions here.
                 Task.Run(() => SafeWrite(payload)).ConfigureAwait(false);
