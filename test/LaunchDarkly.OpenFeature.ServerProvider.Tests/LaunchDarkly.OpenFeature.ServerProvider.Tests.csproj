@@ -36,6 +36,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.OpenFeature.ServerProvider\LaunchDarkly.OpenFeature.ServerProvider.csproj" />
     </ItemGroup>
 
