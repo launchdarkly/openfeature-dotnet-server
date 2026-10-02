@@ -180,6 +180,46 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void ItIgnoresANonStringKey()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("key", 42)
+                .Build();
+
+            Assert.False(_converter.ToLdContext(evaluationContext).Valid);
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
+                "A non-string 'key' attribute was provided."));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
+                " must be a string."));
+        }
+
+        [Fact]
+        public void ItUsesTheKeyAttributeWhenTheTargetingKeyIsEmpty()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "")
+                .Set("key", "the-key")
+                .Build();
+
+            Assert.Equal("the-key", _converter.ToLdContext(evaluationContext).Key);
+            Assert.Empty(_logCapture.GetMessages());
+        }
+
+        [Fact]
+        public void ItLogsAnErrorWhenTheOnlyKeyIsEmpty()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "")
+                .Build();
+
+            Assert.False(_converter.ToLdContext(evaluationContext).Valid);
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
+                " must be a string."));
+        }
+
+        [Fact]
         public void ItCanBuildASingleContext()
         {
             var evaluationContext = EvaluationContext.Builder()
