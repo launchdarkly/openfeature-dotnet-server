@@ -34,6 +34,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             $"must be of type {type}";
 
         /// <summary>
+        /// Get the value as a string, or null if it is not a string or is empty.
+        /// </summary>
+        /// <param name="value">The value to inspect</param>
+        /// <returns>The non-empty string value, or null</returns>
+        private static string NonEmptyString(Value value) =>
+            value != null && value.IsString && value.AsString.Length != 0 ? value.AsString : null;
+
+        /// <summary>
         /// Extract a string value and log an error if the value was not a string.
         /// </summary>
         /// <param name="key">The key of the value</param>
@@ -230,10 +238,17 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         {
             // targetingKey is in the specification, so it takes precedence.
             attributes.TryGetValue("key", out var keyAttr);
-            attributes.TryGetValue("targetingKey", out var targetingKey);
-            var finalKey = (targetingKey ?? keyAttr)?.AsString;
+            attributes.TryGetValue("targetingKey", out var targetingKeyAttr);
+            var targetingKey = NonEmptyString(targetingKeyAttr);
+            var keyFromAttr = NonEmptyString(keyAttr);
+            var finalKey = targetingKey ?? keyFromAttr;
 
-            if (keyAttr != null && targetingKey != null)
+            if (keyAttr != null && !keyAttr.IsNull && !keyAttr.IsString)
+            {
+                _log.Warn("A non-string 'key' attribute was provided.");
+            }
+
+            if (keyFromAttr != null && targetingKey != null)
             {
                 _log.Warn("The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
                           " attribute will be discarded.");
