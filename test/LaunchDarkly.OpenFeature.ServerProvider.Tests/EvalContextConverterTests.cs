@@ -180,6 +180,98 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void ItLogsAnErrorWhenPrivateAttributesIsNotAnArray()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "my-key")
+                .Set("myCustomAttribute", "myCustomValue")
+                .Set("privateAttributes", "myCustomAttribute")
+                .Build();
+
+            var expectedContext = Context.Builder("my-key")
+                .Set("myCustomAttribute", "myCustomValue")
+                .Build();
+
+            Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The attribute 'privateAttributes' must be of type array"));
+        }
+
+        [Fact]
+        public void ItOmitsNonStringPrivateAttributes()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "my-key")
+                .Set("privateAttributes", new Value(new List<Value>
+                {
+                    new Value("myCustomAttribute"),
+                    new Value(17)
+                }))
+                .Build();
+
+            var expectedContext = Context.Builder("my-key")
+                .Private("myCustomAttribute")
+                .Build();
+
+            Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "'privateAttributes' must be an array of only string values. The non-string" +
+                " values have been dropped and the remaining values have been applied."));
+        }
+
+        [Fact]
+        public void ItAllowsEmptyPrivateAttributes()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "my-key")
+                .Set("privateAttributes", new Value(new List<Value>()))
+                .Build();
+
+            Assert.Equal(Context.Builder("my-key").Build(), _converter.ToLdContext(evaluationContext));
+            Assert.Empty(_logCapture.GetMessages());
+        }
+
+        [Fact]
+        public void ItIgnoresANonStringKey()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("key", 42)
+                .Build();
+
+            Assert.False(_converter.ToLdContext(evaluationContext).Valid);
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Warn,
+                "A non-string 'key' attribute was provided."));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
+                " must be a string."));
+        }
+
+        [Fact]
+        public void ItUsesTheKeyAttributeWhenTheTargetingKeyIsEmpty()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "")
+                .Set("key", "the-key")
+                .Build();
+
+            Assert.Equal("the-key", _converter.ToLdContext(evaluationContext).Key);
+            Assert.Empty(_logCapture.GetMessages());
+        }
+
+        [Fact]
+        public void ItLogsAnErrorWhenTheOnlyKeyIsEmpty()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("targetingKey", "")
+                .Build();
+
+            Assert.False(_converter.ToLdContext(evaluationContext).Valid);
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the type" +
+                " must be a string."));
+        }
+
+        [Fact]
         public void ItCanBuildASingleContext()
         {
             var evaluationContext = EvaluationContext.Builder()
