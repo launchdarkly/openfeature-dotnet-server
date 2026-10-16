@@ -98,7 +98,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact(Timeout = 5000)]
-        public async Task ItWaitsIndefinitelyWithANullStartWaitTime()
+        public async Task ItWaitsIndefinitelyWithAnInfiniteStartWaitTime()
         {
             var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
             var provider = new Provider(MakeNotReadyClient(mockDataSourceStatus).Object, true);

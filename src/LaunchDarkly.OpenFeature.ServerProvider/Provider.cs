@@ -78,15 +78,18 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// </para>
         /// <para>
         /// <see cref="TimeSpan.Zero"/> waits nowhere, so initialization fails unless the client is already ready and
-        /// the application learns when it becomes usable from provider events. A null start wait time waits
-        /// indefinitely: nothing is waited for during construction, and initialization does not complete until the
-        /// data source becomes valid or fails permanently.
+        /// the application learns when it becomes usable from provider events.
+        /// <see cref="Timeout.InfiniteTimeSpan"/> waits indefinitely: nothing is waited for during construction, and
+        /// initialization does not complete until the data source becomes valid or fails permanently.
         /// </para>
         /// </remarks>
         /// <param name="config">A client configuration object</param>
-        /// <param name="startWait">How long to wait for the client to become ready, or null to wait indefinitely</param>
-        public Provider(Configuration config, TimeSpan? startWait)
-            : this(new LdClient(WrapConfig(config, startWait ?? TimeSpan.Zero)), startWait == null)
+        /// <param name="startWait">How long to wait for the client to become ready, or
+        /// <see cref="Timeout.InfiniteTimeSpan"/> to wait indefinitely</param>
+        public Provider(Configuration config, TimeSpan startWait)
+            : this(new LdClient(WrapConfig(config,
+                    startWait == Timeout.InfiniteTimeSpan ? TimeSpan.Zero : startWait)),
+                startWait == Timeout.InfiniteTimeSpan)
         {
         }
 

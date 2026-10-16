@@ -32,7 +32,7 @@ This matrix mirrors the [feature matrix of the OpenFeature SDK for .NET](https:/
 | ✅      | Logging                             | The provider logs through the logging configuration of the `Configuration` it is given.                                                                                                                                   |
 | ✅      | Domains                             | Domains bind clients to providers in the OpenFeature SDK; a separate provider instance may be registered per domain.                                                                                                       |
 | ✅      | Eventing                            | LaunchDarkly data source status changes are emitted as `PROVIDER_READY`, `PROVIDER_STALE`, and `PROVIDER_ERROR`. Flag changes are emitted as `PROVIDER_CONFIGURATION_CHANGED` with the changed flag key.                    |
-| ✅      | Initialization                      | `InitializeAsync` reports whether the LaunchDarkly client became ready within the start wait time, which is `StartWaitTime` or the start wait time given to the provider constructor. A null start wait time waits indefinitely.  |
+| ✅      | Initialization                      | `InitializeAsync` reports whether the LaunchDarkly client became ready within the start wait time, which is `StartWaitTime` or the start wait time given to the provider constructor. `Timeout.InfiniteTimeSpan` waits indefinitely.  |
 | ✅      | Shutdown                            | `ShutdownAsync` closes the LaunchDarkly client. A closed client cannot be restarted, so a new provider instance is required afterward.                                                                                     |
 | ✅      | Transaction Context Propagation     | Provided by the OpenFeature SDK, which merges the transaction context into the evaluation context before the provider is called; no provider support is required.                                                          |
 | ✅      | Extending                           | The underlying LaunchDarkly client is available through `GetClient()` for functionality with no OpenFeature equivalent.                                                                                                    |
@@ -200,10 +200,10 @@ If you require construction to be non-blocking, then pass `TimeSpan.Zero` as the
 var provider = new Provider(config, TimeSpan.Zero);
 ```
 
-To wait for the provider to become ready without a deadline, pass a null start wait time. Construction does not block, and `SetProviderAsync` completes once the data source becomes valid or fails permanently.
+To wait for the provider to become ready without a deadline, pass `Timeout.InfiniteTimeSpan`. Construction does not block, and `SetProviderAsync` completes once the data source becomes valid or fails permanently.
 
 ```csharp
-var provider = new Provider(config, null);
+var provider = new Provider(config, Timeout.InfiniteTimeSpan);
 ```
 
 #### Provider Shutdown
