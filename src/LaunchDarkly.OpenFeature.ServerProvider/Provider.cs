@@ -32,7 +32,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private readonly StatusProvider _statusProvider;
 
         private readonly object _initLock = new object();
+        // Guards recording a status together with the matching initialization outcome, so a concurrent data source
+        // status change cannot be interleaved between the two.
+        private readonly object _completionLock = new object();
         private bool _initializeCalled = false;
+        private readonly bool _waitIndefinitely;
 
         // There is no support for void task completion, so we use bool as a dummy result type.
         private readonly TaskCompletionSource<bool> _initCompletion = new TaskCompletionSource<bool>();
@@ -41,11 +45,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private const string ProviderShutdownMessage =
             "the provider has encountered a permanent error or been shutdown";
 
-        internal Provider(ILdClient client)
+        private const string ProviderNotReadyMessage =
+            "the LaunchDarkly client did not become ready within the start wait time";
+
+        internal Provider(ILdClient client) : this(client, true)
+        {
+        }
+
+        internal Provider(ILdClient client, bool waitIndefinitely)
         {
             _client = client;
+            _waitIndefinitely = waitIndefinitely;
             _logger = _client.GetLogger().SubLogger(NameSpace);
-            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger);
+            _statusProvider = new StatusProvider(EventChannel, _metadata.Name, _logger,
+                () => _initCompletion.Task.IsCompleted);
             _contextConverter = new EvalContextConverter(_logger);
         }
 
@@ -53,7 +66,33 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given configuration.
         /// </summary>
         /// <param name="config">A client configuration object</param>
-        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)))
+        public Provider(Configuration config) : this(new LdClient(WrapConfig(config)), false)
+        {
+        }
+
+        /// <summary>
+        ///  Construct a new instance of the provider with the given configuration and start wait time.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The start wait time replaces the one configured with <c>StartWaitTime</c> and bounds the whole of
+        /// initialization: the LaunchDarkly client waits for up to that long while it is constructed, and
+        /// <see cref="InitializeAsync"/> then reports whether it became ready.
+        /// </para>
+        /// <para>
+        /// <see cref="TimeSpan.Zero"/> waits nowhere, so initialization fails unless the client is already ready and
+        /// the application learns when it becomes usable from provider events.
+        /// <see cref="Timeout.InfiniteTimeSpan"/> waits indefinitely: nothing is waited for during construction, and
+        /// initialization does not complete until the data source becomes valid or fails permanently.
+        /// </para>
+        /// </remarks>
+        /// <param name="config">A client configuration object</param>
+        /// <param name="startWait">How long to wait for the client to become ready, or
+        /// <see cref="Timeout.InfiniteTimeSpan"/> to wait indefinitely</param>
+        public Provider(Configuration config, TimeSpan startWait)
+            : this(new LdClient(WrapConfig(config,
+                    startWait == Timeout.InfiniteTimeSpan ? TimeSpan.Zero : startWait)),
+                startWait == Timeout.InfiniteTimeSpan)
         {
         }
 
@@ -61,7 +100,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         ///  Construct a new instance of the provider with the given SDK key.
         /// </summary>
         /// <param name="sdkKey">The SDK key</param>
-        public Provider(string sdkKey) : this(new LdClient(WrapConfig(Configuration.Builder(sdkKey).Build())))
+        public Provider(string sdkKey) : this(new LdClient(WrapConfig(Configuration.Builder(sdkKey).Build())), false)
         {
         }
 
@@ -90,6 +129,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 .WrapperInfo(Components.WrapperInfo().Name("open-feature-dotnet-server")
                     .Version(typeof(Provider).Assembly.GetName().Version.ToString()))
                 .Build();
+        }
+
+        private static Configuration WrapConfig(Configuration config, TimeSpan startWait)
+        {
+            return Configuration.Builder(WrapConfig(config)).StartWaitTime(startWait).Build();
         }
 
         #region FeatureProvider Implementation
@@ -147,16 +191,27 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             // then we could have missed a status change. If we check before registering a listener, then we could
             // miss a change between checking and listening. Doing it this way we can get duplicates, but we filter
             // when the status does not actually change, so we won't emit duplicate events.
-            if (_client.Initialized)
+            lock (_completionLock)
             {
-                _statusProvider.SetStatus(ProviderStatus.Ready);
-                _initCompletion.TrySetResult(true);
-            }
+                if (_client.Initialized)
+                {
+                    _statusProvider.SetStatus(ProviderStatus.Ready);
+                    _initCompletion.TrySetResult(true);
+                }
 
-            if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
-            {
-                _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
+                {
+                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                }
+
+                if (!_waitIndefinitely && !_initCompletion.Task.IsCompleted)
+                {
+                    // The OpenFeature client emits an error event when initialization fails, so the status is
+                    // recorded here, before initialization completes, without emitting an event of our own.
+                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderNotReadyMessage);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderNotReadyMessage));
+                }
             }
 
             return WaitForInitializationAsync(cancellationToken);
@@ -218,6 +273,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         private void StatusChangeHandler(object sender, DataSourceStatus status)
+        {
+            lock (_completionLock)
+            {
+                HandleStatusChange(status);
+            }
+        }
+
+        private void HandleStatusChange(DataSourceStatus status)
         {
             switch (status.State)
             {
