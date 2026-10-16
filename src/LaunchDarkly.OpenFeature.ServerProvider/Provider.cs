@@ -32,6 +32,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private readonly StatusProvider _statusProvider;
 
         private readonly object _initLock = new object();
+        // Guards recording a status together with the matching initialization outcome, so a concurrent data source
+        // status change cannot be interleaved between the two.
+        private readonly object _completionLock = new object();
         private bool _initializeCalled = false;
         private readonly bool _waitIndefinitely;
 
@@ -188,24 +191,27 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             // then we could have missed a status change. If we check before registering a listener, then we could
             // miss a change between checking and listening. Doing it this way we can get duplicates, but we filter
             // when the status does not actually change, so we won't emit duplicate events.
-            if (_client.Initialized)
+            lock (_completionLock)
             {
-                _statusProvider.SetStatus(ProviderStatus.Ready);
-                _initCompletion.TrySetResult(true);
-            }
+                if (_client.Initialized)
+                {
+                    _statusProvider.SetStatus(ProviderStatus.Ready);
+                    _initCompletion.TrySetResult(true);
+                }
 
-            if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
-            {
-                _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
-            }
+                if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
+                {
+                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                }
 
-            if (!_waitIndefinitely && !_initCompletion.Task.IsCompleted)
-            {
-                // The OpenFeature client emits an error event when initialization fails, so the status is recorded
-                // here, before initialization completes, without emitting an event of our own.
-                _statusProvider.SetStatus(ProviderStatus.Error, ProviderNotReadyMessage);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderNotReadyMessage));
+                if (!_waitIndefinitely && !_initCompletion.Task.IsCompleted)
+                {
+                    // The OpenFeature client emits an error event when initialization fails, so the status is
+                    // recorded here, before initialization completes, without emitting an event of our own.
+                    _statusProvider.SetStatus(ProviderStatus.Error, ProviderNotReadyMessage);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderNotReadyMessage));
+                }
             }
 
             return WaitForInitializationAsync(cancellationToken);
@@ -267,6 +273,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         private void StatusChangeHandler(object sender, DataSourceStatus status)
+        {
+            lock (_completionLock)
+            {
+                HandleStatusChange(status);
+            }
+        }
+
+        private void HandleStatusChange(DataSourceStatus status)
         {
             switch (status.State)
             {
