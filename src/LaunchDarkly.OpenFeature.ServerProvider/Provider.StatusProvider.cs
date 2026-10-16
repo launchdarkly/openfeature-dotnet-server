@@ -12,6 +12,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private sealed class StatusProvider
         {
             private ProviderStatus _providerStatus = ProviderStatus.NotReady;
+            private string _statusMessage;
+            private bool _startupWaitCanceled;
             private readonly object _statusLock = new object();
             private readonly Channel<object> _eventChannel;
             private readonly string _providerName;
@@ -56,6 +58,43 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 }
             }
 
+            /// <summary>
+            /// Handles a startup wait which was canceled instead of completing. The OpenFeature SDK reports the
+            /// cancellation as the initialization outcome, so the current status is emitted as an event and later
+            /// status changes are no longer suppressed as duplicates of the startup event.
+            /// </summary>
+            public void StartupWaitCanceled()
+            {
+                lock (_statusLock)
+                {
+                    _startupWaitCanceled = true;
+                    if (_providerStatus != ProviderStatus.NotReady)
+                    {
+                        EmitStatusEvent(_providerStatus, _statusMessage);
+                    }
+                }
+            }
+
+            private void EmitStatusEvent(ProviderStatus status, string message)
+            {
+                switch (status)
+                {
+                    case ProviderStatus.NotReady:
+                        break;
+                    case ProviderStatus.Ready:
+                        EmitProviderEvent(ProviderEventTypes.ProviderReady, message);
+                        break;
+                    case ProviderStatus.Stale:
+                        EmitProviderEvent(ProviderEventTypes.ProviderStale, message);
+                        break;
+                    case ProviderStatus.Error:
+                    case ProviderStatus.Fatal:
+                    default:
+                        EmitProviderEvent(ProviderEventTypes.ProviderError, message);
+                        break;
+                }
+            }
+
             public void SetStatus(ProviderStatus status, string message = null)
             {
                 lock (_statusLock)
@@ -66,30 +105,17 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     }
 
                     _providerStatus = status;
+                    _statusMessage = message;
                     // The OpenFeature client will emit a ready or error event when initialization completes.
                     // The status change which completes initialization is therefore not emitted here, to avoid
                     // duplicating that event. Status changes after initialization has completed, including after it
-                    // has failed, are emitted.
-                    if (!_initializationCompleted())
+                    // has failed, or after the startup wait was canceled, are emitted.
+                    if (!_startupWaitCanceled && !_initializationCompleted())
                     {
                         return;
                     }
-                    switch (status)
-                    {
-                        case ProviderStatus.NotReady:
-                            break;
-                        case ProviderStatus.Ready:
-                            EmitProviderEvent(ProviderEventTypes.ProviderReady, message);
-                            break;
-                        case ProviderStatus.Stale:
-                            EmitProviderEvent(ProviderEventTypes.ProviderStale, message);
-                            break;
-                        case ProviderStatus.Error:
-                        case ProviderStatus.Fatal:
-                        default:
-                            EmitProviderEvent(ProviderEventTypes.ProviderError, message);
-                            break;
-                    }
+
+                    EmitStatusEvent(status, message);
                 }
             }
         }
