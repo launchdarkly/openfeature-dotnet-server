@@ -365,6 +365,36 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact(Timeout = 5000)]
+        public async Task ItIncludesAnErrorTypeInErrorEvents()
+        {
+            var mockClient = new Mock<ILdClient>();
+            mockClient.Setup(l => l.GetLogger())
+                .Returns(Components.NoLogging.Build(null).LogAdapter.Logger(null));
+            mockClient.Setup(l => l.Initialized).Returns(true);
+
+            var mockDataSourceStatus = new Mock<IDataSourceStatusProvider>();
+            mockDataSourceStatus.Setup(l => l.Status).Returns(new DataSourceStatus
+            {
+                State = DataSourceState.Valid
+            });
+            mockClient.Setup(l => l.DataSourceStatusProvider).Returns(mockDataSourceStatus.Object);
+
+            var mockFlagTracker = new Mock<IFlagTracker>();
+            mockClient.Setup(l => l.FlagTracker).Returns(mockFlagTracker.Object);
+
+            var provider = new Provider(mockClient.Object);
+            await provider.InitializeAsync(EvaluationContext.Empty);
+
+            mockDataSourceStatus.Raise(e => e.StatusChanged += null,
+                mockDataSourceStatus.Object,
+                new DataSourceStatus { State = DataSourceState.Off });
+
+            var errorEvent = await provider.GetEventChannel().Reader.ReadAsync() as ProviderEventPayload;
+            Assert.Equal(ProviderEventTypes.ProviderError, errorEvent?.Type);
+            Assert.Equal(ErrorType.General, errorEvent?.ErrorType);
+        }
+
+        [Fact(Timeout = 5000)]
         public void ItTracksCustomEvents()
         {
             var evaluationContext = EvaluationContext.Builder()
