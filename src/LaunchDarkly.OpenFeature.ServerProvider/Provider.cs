@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
-using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Server;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using OpenFeature;
@@ -32,7 +31,8 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         private readonly EvalContextConverter _contextConverter;
         private readonly StatusProvider _statusProvider;
 
-        private readonly AtomicBoolean _initializeCalled = new AtomicBoolean(false);
+        private readonly object _initLock = new object();
+        private bool _initializeCalled = false;
 
         // There is no support for void task completion, so we use bool as a dummy result type.
         private readonly TaskCompletionSource<bool> _initCompletion = new TaskCompletionSource<bool>();
@@ -130,9 +130,13 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <inheritdoc />
         public override Task InitializeAsync(EvaluationContext context, CancellationToken cancellationToken = default)
         {
-            if (_initializeCalled.GetAndSet(true))
+            lock (_initLock)
             {
-                return _initCompletion.Task;
+                if (_initializeCalled)
+                {
+                    return WaitForInitializationAsync(cancellationToken);
+                }
+                _initializeCalled = true;
             }
 
             _client.FlagTracker.FlagChanged += FlagChangeHandler;
@@ -149,13 +153,36 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 _initCompletion.TrySetResult(true);
             }
 
-            if (_client.DataSourceStatusProvider.Status.State == DataSourceState.Off)
+            var dataSourceStatus = _client.DataSourceStatusProvider.Status;
+            if (dataSourceStatus.State == DataSourceState.Off)
             {
-                _statusProvider.SetStatus(ProviderStatus.Error, ProviderShutdownMessage);
-                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                var message = DescribeLastError(dataSourceStatus, ProviderShutdownMessage);
+                _statusProvider.SetStatus(ProviderStatus.Error, message);
+                _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
             }
 
-            return _initCompletion.Task;
+            return WaitForInitializationAsync(cancellationToken);
+        }
+
+        private async Task WaitForInitializationAsync(CancellationToken cancellationToken)
+        {
+            if (!cancellationToken.CanBeCanceled)
+            {
+                await _initCompletion.Task.ConfigureAwait(false);
+                return;
+            }
+
+            var cancellation = new TaskCompletionSource<bool>();
+            using (cancellationToken.Register(() => cancellation.TrySetCanceled(cancellationToken)))
+            {
+                var completed = await Task.WhenAny(_initCompletion.Task, cancellation.Task).ConfigureAwait(false);
+                if (completed != _initCompletion.Task)
+                {
+                    _statusProvider.StartupWaitCanceled();
+                }
+
+                await completed.ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
@@ -206,16 +233,27 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     // The "ProviderStatus.Error" state says it is unable to evaluate flags. We can always evaluate
                     // flags.
                     _statusProvider.SetStatus(ProviderStatus.Stale,
-                        status.LastError?.Message ?? "encountered an unknown error");
+                        DescribeLastError(status, "encountered an unknown error"));
                     break;
                 case DataSourceState.Off:
                 default:
-                    // If we had initialized every, then we could still initialize flags, but I think we need to let
-                    // a consumer know we have encountered an unrecoverable problem with the connection.
-                    _statusProvider.SetStatus(ProviderStatus.Fatal, ProviderShutdownMessage);
-                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(ProviderShutdownMessage));
+                    // The status is an error, and not fatal, because the LaunchDarkly client can continue to
+                    // evaluate flags using the data it already has.
+                    var message = DescribeLastError(status, ProviderShutdownMessage);
+                    _statusProvider.SetStatus(ProviderStatus.Error, message);
+                    _initCompletion.TrySetException(new LaunchDarklyProviderInitException(message));
                     break;
             }
+        }
+
+        private static string DescribeLastError(DataSourceStatus status, string fallback)
+        {
+            if (status.LastError is DataSourceStatus.ErrorInfo lastError)
+            {
+                return lastError.Message ?? lastError.ToString();
+            }
+
+            return fallback;
         }
 
         /// <inheritdoc />

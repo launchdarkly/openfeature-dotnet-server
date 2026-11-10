@@ -19,6 +19,29 @@ This version of the SDK is built for the following targets:
 * .NET Framework 4.7.1: runs on .NET Framework 4.7.1 and above.
 * .NET Standard 2.0: runs in any project that is targeted to .NET Standard 2.x rather than to a specific runtime platform.
 
+## Feature matrix
+
+This matrix mirrors the [feature matrix of the OpenFeature SDK for .NET](https://github.com/open-feature/dotnet-sdk#-features) and describes what this provider supports. Rows which are not supported state whether the limitation comes from the OpenFeature .NET SDK or from the provider.
+
+| Status | Feature                             | Notes                                                                                                                                                                                                                     |
+|--------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✅      | Providers                           | Evaluates boolean, string, integer, double, and structure values through the LaunchDarkly .NET SDK.                                                                                                                       |
+| ✅      | Targeting                           | The `EvaluationContext` is converted to a LaunchDarkly single or multi-context. See [OpenFeature Specific Considerations](#openfeature-specific-considerations).                                                           |
+| ✅      | Hooks                               | Hooks are registered on the OpenFeature API and client; the provider requires no additional support and its results are visible to hooks, including [flag metadata](#flag-metadata).                                       |
+| ✅      | Tracking                            | `Track` sends a LaunchDarkly custom event for the evaluation context, with the tracking event value and remaining details attached.                                                                                         |
+| ✅      | Logging                             | The provider logs through the logging configuration of the `Configuration` it is given.                                                                                                                                   |
+| ✅      | Domains                             | Domains bind clients to providers in the OpenFeature SDK; a separate provider instance may be registered per domain.                                                                                                       |
+| ✅      | Eventing                            | LaunchDarkly data source status changes are emitted as `PROVIDER_READY`, `PROVIDER_STALE`, and `PROVIDER_ERROR`. Flag changes are emitted as `PROVIDER_CONFIGURATION_CHANGED` with the changed flag key.                    |
+| ⚠️      | Initialization                      | `InitializeAsync` waits for the LaunchDarkly client to become ready or to shut down, and stops waiting if the cancellation token given to `SetProviderAsync` is canceled. It has no timeout of its own; `StartWaitTime` applies to the client constructor. Since LaunchDarkly .NET SDK 8.17.0 a rejected SDK key is retried rather than failing permanently, so without a cancellation token `InitializeAsync` can wait indefinitely. Provider gap: [#71](https://github.com/launchdarkly/openfeature-dotnet-server/pull/71). |
+| ✅      | Shutdown                            | `ShutdownAsync` closes the LaunchDarkly client. A closed client cannot be restarted, so a new provider instance is required afterward.                                                                                     |
+| ✅      | Transaction Context Propagation     | Provided by the OpenFeature SDK, which merges the transaction context into the evaluation context before the provider is called; no provider support is required.                                                          |
+| ✅      | Extending                           | The underlying LaunchDarkly client is available through `GetClient()` for functionality with no OpenFeature equivalent.                                                                                                    |
+| ✅      | Multi-Provider (experimental)      | Provided by the OpenFeature SDK; no provider support is required.                                                                                                                                                          |
+| ⚠️      | DependencyInjection (experimental) | Not yet supported by this provider: [#48](https://github.com/launchdarkly/openfeature-dotnet-server/issues/48), [#49](https://github.com/launchdarkly/openfeature-dotnet-server/pull/49).                              |
+| ✅      | Flag metadata                       | LaunchDarkly evaluation reason details are returned as OpenFeature flag metadata. See [Flag Metadata](#flag-metadata).                                                                                                     |
+
+<sub>Supported: ✅ | Partially supported: ⚠️ | Not supported: ❌</sub>
+
 ## Getting started
 
 ### Installation
@@ -147,11 +170,29 @@ var evaluationContext = EvaluationContext.Builder()
   .Build();
 ```
 
+### Flag Metadata
+
+Evaluations include flag metadata for the LaunchDarkly specific parts of the evaluation result which have no OpenFeature equivalent. Each entry is absent when it does not apply to the evaluation.
+
+| Key                 | Type    | Description                                                            |
+|---------------------|---------|------------------------------------------------------------------------|
+| `variationIndex`    | integer | The index of the returned variation. Absent for default values.         |
+| `inExperiment`      | boolean | Present, and `true`, when the evaluation was part of an experiment.     |
+| `ruleIndex`         | integer | The index of the rule that matched.                                    |
+| `ruleId`            | string  | The identifier of the rule that matched.                               |
+| `prerequisiteKey`   | string  | The key of the prerequisite flag that failed.                           |
+| `bigSegmentsStatus` | string  | The status of the Big Segments query made during the evaluation.        |
+
+```csharp
+var details = await client.GetBooleanDetailsAsync("my-flag", false, evaluationContext);
+var inExperiment = details.FlagMetadata.GetBool("inExperiment") ?? false;
+```
+
 ### Advanced Usage
 
 #### Asynchronous Initialization
 
-The LaunchDarkly SDK by default blocks on construction for up to 5 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
+The LaunchDarkly SDK by default blocks on construction for up to 10 seconds for initialization. If you require construction to be non-blocking, then you can adjust the `startWaitTime` to `TimeSpan.Zero`. Initialization will be completed asynchronously and OpenFeature will emit a ready event when the provider has initialized. The `SetProviderAsync` method can be awaited to wait for the SDK to finish initialization.
 
 ```csharp
 var config = Configuration.Builder("my-sdk-key")

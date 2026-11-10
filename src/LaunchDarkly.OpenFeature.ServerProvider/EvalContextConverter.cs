@@ -34,6 +34,14 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             $"must be of type {type}";
 
         /// <summary>
+        /// Get the value as a string, or null if it is not a string or is empty.
+        /// </summary>
+        /// <param name="value">The value to inspect</param>
+        /// <returns>The non-empty string value, or null</returns>
+        private static string NonEmptyString(Value value) =>
+            value != null && value.IsString && value.AsString.Length != 0 ? value.AsString : null;
+
+        /// <summary>
         /// Extract a string value and log an error if the value was not a string.
         /// </summary>
         /// <param name="key">The key of the value</param>
@@ -86,6 +94,40 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         }
 
         /// <summary>
+        /// Extract private attributes and log an error if they are not a list of strings.
+        /// </summary>
+        /// <param name="value">The value to extract</param>
+        /// <param name="builder">The context builder to add the private attributes to</param>
+        private void ExtractPrivateAttributes(LdValue value, ContextBuilder builder)
+        {
+            if (value.IsNull)
+            {
+                // Ignore null values.
+                return;
+            }
+
+            if (value.Type != LdValueType.Array)
+            {
+                _log.Error(InvalidTypeMessage("privateAttributes", "array"));
+                return;
+            }
+
+            var items = value.AsList(LdValue.Convert.Json);
+            var privateAttributes = items.Where(item => item.IsString).Select(item => item.AsString).ToArray();
+
+            if (privateAttributes.Length != items.Count)
+            {
+                _log.Error("'privateAttributes' must be an array of only string values. The non-string" +
+                           " values have been dropped and the remaining values have been applied.");
+            }
+
+            if (privateAttributes.Length != 0)
+            {
+                builder.Private(privateAttributes);
+            }
+        }
+
+        /// <summary>
         /// Extract a value and add it to a context builder.
         /// </summary>
         /// <param name="key">The key to add to the context if the value can be extracted</param>
@@ -108,7 +150,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     Extract(key, ldValue, builder.Anonymous);
                     break;
                 case "privateAttributes":
-                    builder.Private(ldValue.AsList(LdValue.Convert.String).ToArray());
+                    ExtractPrivateAttributes(ldValue, builder);
                     break;
                 default:
                     // Was not a built-in attribute.
@@ -196,10 +238,17 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         {
             // targetingKey is in the specification, so it takes precedence.
             attributes.TryGetValue("key", out var keyAttr);
-            attributes.TryGetValue("targetingKey", out var targetingKey);
-            var finalKey = (targetingKey ?? keyAttr)?.AsString;
+            attributes.TryGetValue("targetingKey", out var targetingKeyAttr);
+            var targetingKey = NonEmptyString(targetingKeyAttr);
+            var keyFromAttr = NonEmptyString(keyAttr);
+            var finalKey = targetingKey ?? keyFromAttr;
 
-            if (keyAttr != null && targetingKey != null)
+            if (keyAttr != null && !keyAttr.IsNull && !keyAttr.IsString)
+            {
+                _log.Warn("A non-string 'key' attribute was provided.");
+            }
+
+            if (keyFromAttr != null && targetingKey != null)
             {
                 _log.Warn("The EvaluationContext contained both a 'targetingKey' and a 'key' attribute. The 'key'" +
                           " attribute will be discarded.");

@@ -2,6 +2,48 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.2](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.3.1...2.3.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* Honor the cancellation token when waiting for initialization ([#72](https://github.com/launchdarkly/openfeature-dotnet-server/issues/72)) ([0e6432d](https://github.com/launchdarkly/openfeature-dotnet-server/commit/0e6432dc53adb9a91b471932d4c640d34587267c))
+* Include an error type in provider error events ([#73](https://github.com/launchdarkly/openfeature-dotnet-server/issues/73)) ([4f64d9c](https://github.com/launchdarkly/openfeature-dotnet-server/commit/4f64d9cfcef5ee373682460c695eb34b89962a97))
+* Include the last data source error in provider error and stale events ([#74](https://github.com/launchdarkly/openfeature-dotnet-server/issues/74)) ([8c23f97](https://github.com/launchdarkly/openfeature-dotnet-server/commit/8c23f973c9bf21838b3ce6a2d101e1c5019a8738))
+
+## [2.3.1](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.3.0...2.3.1) (2026-10-02)
+
+
+### Bug Fixes
+
+* Ignore non-string and empty keys in evaluation context conversion ([#69](https://github.com/launchdarkly/openfeature-dotnet-server/issues/69)) ([3623bff](https://github.com/launchdarkly/openfeature-dotnet-server/commit/3623bffa0d645008220815c378edf4dd3c8ab226))
+
+## [2.3.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.2.0...2.3.0) (2026-08-25)
+
+
+### Features
+
+* Populate OpenFeature flag metadata from the evaluation reason ([#61](https://github.com/launchdarkly/openfeature-dotnet-server/issues/61)) ([1081b79](https://github.com/launchdarkly/openfeature-dotnet-server/commit/1081b791a06e18a2dbe09bd6ea8dcf99aa0fabe9))
+
+## [2.2.0](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.2...2.2.0) (2026-08-20)
+
+
+### Features
+
+* Stop waiting for initialization after the configured start wait time ([#60](https://github.com/launchdarkly/openfeature-dotnet-server/issues/60)) ([86e3d27](https://github.com/launchdarkly/openfeature-dotnet-server/commit/86e3d2720790dc0d9efa2971ab9e742d7cea75cd))
+
+
+### Bug Fixes
+
+* Do not report a permanent data source failure as fatal ([#59](https://github.com/launchdarkly/openfeature-dotnet-server/issues/59)) ([ed29935](https://github.com/launchdarkly/openfeature-dotnet-server/commit/ed2993513380a06043cb1d32554266c54ed26720))
+
+## [2.1.2](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.1...2.1.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* Remove direct dependency on LaunchDarkly.InternalSdk ([#51](https://github.com/launchdarkly/openfeature-dotnet-server/issues/51)) ([ec6a02a](https://github.com/launchdarkly/openfeature-dotnet-server/commit/ec6a02a3d3757192ffb8ebeca6aca5bd95c1779b))
+
 ## [2.1.1](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.1.0...2.1.1) (2025-05-13)
 
 
