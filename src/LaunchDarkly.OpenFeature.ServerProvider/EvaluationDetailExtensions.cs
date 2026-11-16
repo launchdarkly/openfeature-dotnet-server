@@ -21,7 +21,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
         /// <summary>
         /// Convert an <see cref="EvaluationReasonKind"/> into a string identifier.
-        /// This string identifier is the same as we would use in a JSON representation.
+        /// Uses the OpenFeature equivalent where one exists, otherwise the LaunchDarkly identifier.
         /// </summary>
         /// <param name="value">The value to convert</param>
         /// <returns>The value as a string</returns>
@@ -31,11 +31,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             switch (value)
             {
                 case EvaluationReasonKind.Off:
-                    return "OFF";
+                    return Reason.Disabled;
                 case EvaluationReasonKind.Fallthrough:
                     return "FALLTHROUGH";
                 case EvaluationReasonKind.TargetMatch:
-                    return "TARGET_MATCH";
+                    return Reason.TargetingMatch;
                 case EvaluationReasonKind.RuleMatch:
                     return "RULE_MATCH";
                 case EvaluationReasonKind.PrerequisiteFailed:
@@ -115,7 +115,6 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         /// <param name="flagKey">The flag key that was evaluated</param>
         /// <typeparam name="T">The type of the flag evaluation</typeparam>
         /// <returns>The <see cref="EvaluationDetail{T}"/></returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if the kind is not valid</exception>
         public static ResolutionDetails<T> ToResolutionDetails<T>(this EvaluationDetail<T> detail, string flagKey)
         {
             if (detail.Reason.Kind != EvaluationReasonKind.Error)
@@ -145,10 +144,9 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     break;
                 case EvaluationErrorKind.Exception:
                 case null:
+                default:
                     // All general errors.
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
 
             return new ResolutionDetails<T>(flagKey, detail.Value, errorType,
