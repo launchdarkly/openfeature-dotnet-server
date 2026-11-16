@@ -40,11 +40,34 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanConvertDates()
         {
-            var date = new DateTime(0);
+            var date = new DateTime(0, DateTimeKind.Utc);
             var dateString = date.ToString("yyyy-MM-ddTHH:mm:ssZ");
             var ofValue = new Value(date);
             var ldValue = ofValue.ToLdValue();
             Assert.Equal(dateString, ldValue.AsString);
+        }
+
+        [Fact]
+        public void ItPreservesDatesInNestedValues()
+        {
+            var date = new DateTime(2026, 11, 16, 12, 34, 56, DateTimeKind.Utc).AddTicks(1234567);
+            var value = new Value(Structure.Builder()
+                .Set("dates", new Value(new List<Value> { new Value(date.ToLocalTime()) }))
+                .Build());
+
+            Assert.Equal("2026-11-16T12:34:56.1234567Z", value.ToLdValue().Get("dates").Get(0).AsString);
+        }
+
+        [Theory]
+        [InlineData(DateTimeKind.Utc)]
+        [InlineData(DateTimeKind.Local)]
+        [InlineData(DateTimeKind.Unspecified)]
+        public void ItConvertsDatesToUtcWithoutLosingPrecision(DateTimeKind kind)
+        {
+            var utc = new DateTime(2026, 11, 16, 12, 34, 56, DateTimeKind.Utc).AddTicks(1234567);
+            var date = kind == DateTimeKind.Utc ? utc : DateTime.SpecifyKind(utc.ToLocalTime(), kind);
+
+            Assert.Equal("2026-11-16T12:34:56.1234567Z", new Value(date).ToLdValue().AsString);
         }
 
         [Fact]

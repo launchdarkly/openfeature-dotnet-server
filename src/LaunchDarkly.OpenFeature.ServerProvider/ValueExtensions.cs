@@ -42,7 +42,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                 var asDateTime = value.AsDateTime;
                 if (asDateTime.HasValue)
                 {
-                    return LdValue.Of(asDateTime.Value.ToString("yyyy-MM-ddTHH:mm:ssZ",
+                    return LdValue.Of(asDateTime.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFFZ",
                         CultureInfo.InvariantCulture));
                 }
             }
