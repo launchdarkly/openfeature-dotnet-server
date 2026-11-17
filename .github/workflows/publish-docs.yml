@@ -8,7 +8,7 @@ jobs:
     permissions:
       contents: write # Needed in this case to write github pages.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: build
         name: Build and Test SDK
         uses: ./.github/actions/ci
