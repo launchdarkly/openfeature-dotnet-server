@@ -395,7 +395,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             var errorEvent = await EmitStatusAndReadEvent(new DataSourceStatus
             {
                 State = DataSourceState.Off,
-                LastError = DataSourceStatus.ErrorInfo.FromException(new System.Exception("the key was invalid"))
+                LastError = new DataSourceStatus.ErrorInfo
+                {
+                    Kind = DataSourceStatus.ErrorKind.Unknown,
+                    Message = "the key was invalid"
+                }
             });
             Assert.Equal(ProviderEventTypes.ProviderError, errorEvent?.Type);
             Assert.Equal("the key was invalid", errorEvent?.Message);
@@ -404,7 +408,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact(Timeout = 5000)]
         public async Task ItDescribesHttpErrorsWithoutAMessageInErrorEvents()
         {
-            var lastError = DataSourceStatus.ErrorInfo.FromHttpError(401);
+            var lastError = new DataSourceStatus.ErrorInfo
+            {
+                Kind = DataSourceStatus.ErrorKind.ErrorResponse,
+                StatusCode = 401
+            };
             var errorEvent = await EmitStatusAndReadEvent(new DataSourceStatus
             {
                 State = DataSourceState.Off,
@@ -426,7 +434,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact(Timeout = 5000)]
         public async Task ItDescribesHttpErrorsWithoutAMessageInStaleEvents()
         {
-            var lastError = DataSourceStatus.ErrorInfo.FromHttpError(503);
+            var lastError = new DataSourceStatus.ErrorInfo
+            {
+                Kind = DataSourceStatus.ErrorKind.ErrorResponse,
+                StatusCode = 503
+            };
             var staleEvent = await EmitStatusAndReadEvent(new DataSourceStatus
             {
                 State = DataSourceState.Interrupted,
