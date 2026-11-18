@@ -294,6 +294,19 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         }
 
         [Fact]
+        public void ItLogsAnErrorAndUsesUserKindWhenKindIsNotAString()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .SetTargetingKey("the-key")
+                .Set("kind", 42)
+                .Build();
+
+            Assert.Equal(Context.Builder("the-key").Build(), _converter.ToLdContext(evaluationContext));
+            Assert.True(_logCapture.HasMessageWithText(LogLevel.Error,
+                "The EvaluationContext contained an invalid kind and it will be discarded."));
+        }
+
+        [Fact]
         public void ItCanBuildAMultiContext()
         {
             var evaluationContext = EvaluationContext.Builder()

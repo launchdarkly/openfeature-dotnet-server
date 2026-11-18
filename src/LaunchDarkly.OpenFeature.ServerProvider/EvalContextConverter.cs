@@ -184,7 +184,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             // The kind was not a string.
             else if (kind != null && !kind.IsString)
             {
-                _log.Warn("The EvaluationContext contained an invalid kind and it will be discarded.");
+                _log.Error("The EvaluationContext contained an invalid kind and it will be discarded.");
             }
             // Else, there is no kind, so we are going to assume a user.
 
