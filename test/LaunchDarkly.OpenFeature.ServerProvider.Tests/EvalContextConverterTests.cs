@@ -338,5 +338,57 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
 
             Assert.Equal(expectedContext, _converter.ToLdContext(evaluationContext));
         }
+
+        [Theory]
+        [InlineData("org")]
+        [InlineData("multi")]
+        [InlineData(42)]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ItIgnoresNestedKindAttributes(object nestedKind)
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("kind", "multi")
+                .Set("user", new Structure(new Dictionary<string, Value>
+                {
+                    { "key", new Value("my-user-key") },
+                    { "kind", new Value(nestedKind) }
+                }))
+                .Set("org", new Structure(new Dictionary<string, Value>
+                {
+                    { "key", new Value("my-org-key") }
+                }))
+                .Build();
+
+            var convertedContext = _converter.ToLdContext(evaluationContext);
+
+            Assert.True(convertedContext.Valid);
+            Assert.Collection(convertedContext.MultiKindContexts, _ => { }, _ => { });
+            Assert.True(convertedContext.TryGetContextByKind(ContextKind.Of("user"), out var userContext));
+            Assert.True(convertedContext.TryGetContextByKind(ContextKind.Of("org"), out var orgContext));
+            Assert.Equal(ContextKind.Of("user"), userContext.Kind);
+            Assert.Equal("my-user-key", userContext.Key);
+            Assert.Equal(ContextKind.Of("org"), orgContext.Kind);
+            Assert.Equal("my-org-key", orgContext.Key);
+            Assert.DoesNotContain("kind", userContext.OptionalAttributeNames);
+            Assert.Empty(_logCapture.GetMessages());
+        }
+
+        [Fact]
+        public void ItUsesTheTopLevelKindForASingleContext()
+        {
+            var evaluationContext = EvaluationContext.Builder()
+                .Set("kind", "org")
+                .Set("key", "my-org-key")
+                .Build();
+
+            var convertedContext = _converter.ToLdContext(evaluationContext);
+
+            Assert.True(convertedContext.Valid);
+            Assert.Equal(ContextKind.Of("org"), convertedContext.Kind);
+            Assert.Equal("my-org-key", convertedContext.Key);
+            Assert.DoesNotContain("kind", convertedContext.OptionalAttributeNames);
+            Assert.Empty(_logCapture.GetMessages());
+        }
     }
 }

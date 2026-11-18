@@ -139,9 +139,10 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
 
             switch (key)
             {
-                // The targeting key/key will be handled outside this value conversion.
+                // The targeting key/key and kind are handled outside this value conversion.
                 case "targetingKey":
                 case "key":
+                case "kind":
                     break;
                 case "name":
                     Extract(key, ldValue, builder.Name);
