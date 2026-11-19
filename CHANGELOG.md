@@ -2,6 +2,15 @@
 
 All notable changes to the LaunchDarkly OpenFeature provider for the Server-Side SDK for .NET will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.3.3](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.3.2...2.3.3) (2026-11-18)
+
+
+### Bug Fixes
+
+* Ignore nested kind attributes in multi-kind contexts ([#84](https://github.com/launchdarkly/openfeature-dotnet-server/issues/84)) ([e1715b5](https://github.com/launchdarkly/openfeature-dotnet-server/commit/e1715b5ad50f9dc2309a4cfed896b53026bfcd39))
+* Log invalid context kinds at error level ([#81](https://github.com/launchdarkly/openfeature-dotnet-server/issues/81)) ([43e1f94](https://github.com/launchdarkly/openfeature-dotnet-server/commit/43e1f948c0a920464c8de61215867d2ab940ccdb))
+* Preserve UTC instants when converting date values ([#80](https://github.com/launchdarkly/openfeature-dotnet-server/issues/80)) ([7592102](https://github.com/launchdarkly/openfeature-dotnet-server/commit/75921027db7f6835616dcd9b8a2e8e6b4a0b4245))
+
 ## [2.3.2](https://github.com/launchdarkly/openfeature-dotnet-server/compare/2.3.1...2.3.2) (2026-10-23)
 
 
