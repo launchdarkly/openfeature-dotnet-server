@@ -19,6 +19,8 @@ This version of the SDK is built for the following targets:
 * .NET Framework 4.7.1: runs on .NET Framework 4.7.1 and above.
 * .NET Standard 2.0: runs in any project that is targeted to .NET Standard 2.x rather than to a specific runtime platform.
 
+While these are the minimum supported versions, you should use the latest patched version of a supported .NET release.
+
 ## Feature matrix
 
 This matrix mirrors the [feature matrix of the OpenFeature SDK for .NET](https://github.com/open-feature/dotnet-sdk#-features) and describes what this provider supports. Rows which are not supported state whether the limitation comes from the OpenFeature .NET SDK or from the provider.
