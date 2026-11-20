@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
@@ -12,17 +13,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
         {
             private ProviderStatus _providerStatus = ProviderStatus.NotReady;
             private string _statusMessage;
-            private bool _firstEvent = true;
+            private bool _startupWaitCanceled;
             private readonly object _statusLock = new object();
             private readonly Channel<object> _eventChannel;
             private readonly string _providerName;
             private readonly Logger _logger;
+            private readonly Func<bool> _initializationCompleted;
 
-            public StatusProvider(Channel<object> eventChannel, string providerName, Logger logger)
+            public StatusProvider(Channel<object> eventChannel, string providerName, Logger logger,
+                Func<bool> initializationCompleted)
             {
                 _eventChannel = eventChannel;
                 _providerName = providerName;
                 _logger = logger;
+                _initializationCompleted = initializationCompleted;
             }
 
             private void EmitProviderEvent(ProviderEventTypes type, string message)
@@ -68,7 +72,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
             {
                 lock (_statusLock)
                 {
-                    _firstEvent = false;
+                    _startupWaitCanceled = true;
                     if (_providerStatus != ProviderStatus.NotReady)
                     {
                         EmitStatusEvent(_providerStatus, _statusMessage);
@@ -108,10 +112,11 @@ namespace LaunchDarkly.OpenFeature.ServerProvider
                     _providerStatus = status;
                     _statusMessage = message;
                     // The OpenFeature client will emit a ready or error event when initialization completes.
-                    // We want to avoid duplicating that event.
-                    if (_firstEvent)
+                    // The status change which completes initialization is therefore not emitted here, to avoid
+                    // duplicating that event. Status changes after initialization has completed, including after it
+                    // has failed, or after the startup wait was canceled, are emitted.
+                    if (!_startupWaitCanceled && !_initializationCompleted())
                     {
-                        _firstEvent = false;
                         return;
                     }
 
