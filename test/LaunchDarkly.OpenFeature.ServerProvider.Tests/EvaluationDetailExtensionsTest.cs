@@ -22,7 +22,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
         [Fact]
         public void ItCanHandleEachOfTheNonErrorEvaluationReasons()
         {
-            Assert.Equal("OFF",
+            Assert.Equal("DISABLED",
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.OffReason)
                     .ToResolutionDetails("test-flag").Reason);
 
@@ -30,7 +30,7 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.FallthroughReason)
                     .ToResolutionDetails("test-flag").Reason);
 
-            Assert.Equal("TARGET_MATCH",
+            Assert.Equal("TARGETING_MATCH",
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.TargetMatchReason)
                     .ToResolutionDetails("test-flag").Reason);
 
@@ -73,6 +73,20 @@ namespace LaunchDarkly.OpenFeature.ServerProvider.Tests
             Assert.Equal(ErrorType.ProviderNotReady,
                 new EvaluationDetail<bool>(true, 10, EvaluationReason.ErrorReason(EvaluationErrorKind.ClientNotReady))
                     .ToResolutionDetails("test-flag").ErrorType);
+        }
+
+        [Fact]
+        public void ItMapsUnknownErrorKindsToGeneral()
+        {
+            var detail = new EvaluationDetail<bool>(false, null,
+                EvaluationReason.ErrorReason((EvaluationErrorKind)int.MaxValue));
+
+            var resolution = detail.ToResolutionDetails("test-flag");
+
+            Assert.False(resolution.Value);
+            Assert.Equal("ERROR", resolution.Reason);
+            Assert.Equal(ErrorType.General, resolution.ErrorType);
+            Assert.Null(resolution.Variant);
         }
 
         [Fact]
