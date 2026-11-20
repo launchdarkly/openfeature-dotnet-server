@@ -16,7 +16,7 @@ jobs:
           project_file: ${{ inputs.project_file }}
           test_project_file: ${{ inputs.test_project_file }}
 
-      - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.1
+      - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.4
         name: 'Publish to Github pages'
         with:
           docs_path: docs
