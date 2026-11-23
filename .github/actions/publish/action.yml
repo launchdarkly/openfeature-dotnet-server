@@ -44,7 +44,7 @@ runs:
           echo "dry run - ${pkg}"
         done
 
-    - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.1
+    - uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages/v1
       if: ${{ inputs.dry_run == 'false' }}
       name: 'Publish to Github pages'
       with:
